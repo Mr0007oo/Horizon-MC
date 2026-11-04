@@ -16,6 +16,8 @@ Horizon does not distribute Mojang game assets. Prepare the required resource fo
 
 https://github.com/horizon-rust/horizon/blob/v0.2.97/docs/hosting.md
 
+Prepare the files first with Horizon's `horizon-prepare --prepare --server-jar PATH` command. Horizon's hosting guide requires a Java 25 runtime, a local Minecraft Java Edition 26.3 installation that has been launched once, and the matching 26.3 `server.jar`. Nothing from Mojang is downloaded by this repository.
+
 The private resource archive expected by this project must have this shape:
 
     horizon-resources-26.3.tar.gz
@@ -25,7 +27,14 @@ The private resource archive expected by this project must have this shape:
         commands.json
         ...other prepared Horizon game data...
 
-Create the archive from the parent directory of the prepared 26.3 folder:
+On Windows PowerShell, the Windows Horizon installer stores prepared files below `%LOCALAPPDATA%\Horizon\game-files\horizon-client\26.3`. Create the archive and checksum sidecar like this (adjust the source path only if you chose a custom Horizon data directory):
+
+    $source = Join-Path $env:LOCALAPPDATA "Horizon\game-files\horizon-client"
+    tar.exe -czf .\horizon-resources-26.3.tar.gz -C $source 26.3
+    $hash = (Get-FileHash .\horizon-resources-26.3.tar.gz -Algorithm SHA256).Hash.ToLowerInvariant()
+    Set-Content -Path .\horizon-resources-26.3.tar.gz.sha256 -Value "$hash  horizon-resources-26.3.tar.gz" -NoNewline -Encoding ascii
+
+On Linux, create the archive from the parent directory of the prepared 26.3 folder:
 
     tar -czf horizon-resources-26.3.tar.gz -C /path/to/prepared/resources 26.3
     sha256sum horizon-resources-26.3.tar.gz > horizon-resources-26.3.tar.gz.sha256
