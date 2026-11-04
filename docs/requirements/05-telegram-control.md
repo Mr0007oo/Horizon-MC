@@ -36,8 +36,8 @@ Start the bot only after the Horizon supervisor/control interface is ready. Stop
 Use actual output from the pinned Horizon CLI. Do not invent JSON fields.
 
  /players
-- Use documented horizon-server players --json if supported by the pinned version.
-- Return online players only; do not expose unnecessary IP addresses.
+- Use the supported `horizon-server cmd list` console command in the pinned v0.2.97 release.
+- Return the Minecraft online-player list only; do not expose unnecessary IP addresses.
 
 /console <Minecraft console command>
 - Only allowlisted users.
@@ -74,8 +74,8 @@ Send concise notifications for:
 - Java endpoint health.
 - Bedrock endpoint health if enabled.
 - Player join/leave if event stream support is verified.
-- 5h20 warning.
-- 5h30 warning.
+- 5h00 warning.
+- 5h15 warning.
 - Shutdown start and completion.
 - Backup start/success/failure.
 - Snapshot push and remote verification.
