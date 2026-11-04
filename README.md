@@ -6,7 +6,7 @@ A community server hosting and management project built around the Rust-based Ho
 
 ## Current state
 
-The initial runtime bootstrap is implemented on the feature branch. It is **not yet live-verified** against the owner's FRP server or prepared Minecraft resources. Review and merge the bootstrap PR, complete the one-time setup, then dispatch the Actions workflow manually.
+The initial runtime bootstrap has been merged into `main` by PR #1. It is **not yet live-verified** against the owner's FRP server or prepared Minecraft resources. Complete the one-time setup, then dispatch the Actions workflow manually.
 
 ## Read first
 

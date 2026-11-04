@@ -1,7 +1,7 @@
 # Horizon MC — Current Handoff
 
 ## Current phase
-Phase 1 — Initial runtime bootstrap implemented; latest push and pull-request validation passed; owner setup and live smoke test remain.
+Phase 1 — Runtime bootstrap merged into `main` by PR #1; CI validation passed; owner setup and live smoke test remain.
 
 ## Completed in this branch
 - Updated lifecycle requirement to first warning at 5h00m, second warning at 5h15m, graceful shutdown at 5h25m and job hard timeout at 5h50m.
@@ -18,15 +18,15 @@ Phase 1 — Initial runtime bootstrap implemented; latest push and pull-request 
 The workflow and scripts are implemented but not live-verified. Do not call the server production-ready.
 
 ## Tests
-Offline tests are present in tests/test_runtime_helpers.py. Validation is run on every PR update. The latest validated commit is `1ac38fe833886d3318ad4c4c36e735a5ee87dee2`. Push validation [41775433347](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775433347) and PR validation [41775439286](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775439286) both passed Python compileall, Bash syntax checks and all ten offline tests.
+Offline tests are present in tests/test_runtime_helpers.py. Validation is run on every PR update. Latest validated implementation commit: `34fa293088e93b048a1e3dd024d1f9e8710978dd`. Push validation [41775625706](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775625706) and PR validation [41775630663](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775630663) both passed Python compileall, Bash syntax checks and all ten offline tests.
 
 No actual FRP connection, Java client session, or live server backup/restore has been tested yet.
 
 ## Latest checkpoint
-- Commit: `1ac38fe833886d3318ad4c4c36e735a5ee87dee2`
-- PR #1: https://github.com/Mr0007oo/Horizon-MC/pull/1
-- Base branch: `main`
-- PR remains open and unmerged.
+- Runtime merge commit: `764f3256e9f4c756e150b96b91cec93c18bf0280`
+- Original implementation PR #1: https://github.com/Mr0007oo/Horizon-MC/pull/1 (merged)
+- Documentation follow-up PR #2: https://github.com/Mr0007oo/Horizon-MC/pull/2 (open)
+- Latest validated implementation commit: `34fa293088e93b048a1e3dd024d1f9e8710978dd`.
 
 ## Pinned revisions
 - Horizon v0.2.97 — a3acb5f0d2f59d2d5ff21a5aa000809ba1e35e2f
@@ -50,14 +50,14 @@ No actual FRP connection, Java client session, or live server backup/restore has
 1. Prepare and upload the private Minecraft 26.3 resource release and SHA-256 sidecar.
 2. Configure `FRP_SERVER_ADDR` and `FRP_AUTH_TOKEN`.
 3. Configure Telegram numeric allowlists and alert chat ID if bot control is wanted.
-4. Review and merge PR #1 when ready.
+4. PR #1 is already merged. PR #2 contains documentation-only status/handoff refresh.
 5. Perform a controlled first Java 26.3 connection and world persistence test.
 
 ## Exact next task
 Complete the private resource release and Actions variables/secrets using `docs/SETUP-CODESPACES.md`. Then run a controlled Java 26.3 session with no important player data, verify the public FRP endpoint from a real client, and test the next-run restore.
 
 ## Handoff branch
-copilot/initial-runtime-bootstrap
+docs/post-merge-bootstrap-handoff
 
-## Pull request
-https://github.com/Mr0007oo/Horizon-MC/pull/1
+## Documentation follow-up PR
+https://github.com/Mr0007oo/Horizon-MC/pull/2

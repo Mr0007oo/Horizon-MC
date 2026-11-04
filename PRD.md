@@ -8,7 +8,7 @@
 **Networking:** Owner-provided FRP server  
 **Administration:** Telegram Bot  
 **Persistence:** Dedicated world-data branch  
-**Status:** Initial implementation committed in the open bootstrap PR; live deployment not yet verified
+**Status:** Initial bootstrap merged into `main` by PR #1; live deployment not yet verified
 
 ---
 
