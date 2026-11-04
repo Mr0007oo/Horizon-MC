@@ -161,4 +161,4 @@ Not yet implemented or end-to-end verified:
 - Actual connectivity through your FRP server.
 - Live restore/final-backup test on an Actions runner.
 
-The first Codespaces task after merging is to inspect the CI run, validate the prepared-resource release and run a controlled first server session with no important player data yet.
+After the private resource release and Actions variables/secrets are configured, run one controlled first server session with no important player data. Confirm the FRP endpoint from an actual Java 26.3 client, then verify the final snapshot and next-run restore before inviting players.
