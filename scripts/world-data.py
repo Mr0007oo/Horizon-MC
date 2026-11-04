@@ -10,6 +10,7 @@ import json
 import os
 import pathlib
 import shutil
+import stat
 import subprocess
 import sys
 import zipfile
@@ -118,6 +119,42 @@ def init_store() -> None:
     print(f"World snapshot store ready: {branch}")
 
 
+
+RESTORE_FILES = (
+    "server.toml",
+    "server.properties",
+    "ops.json",
+    "whitelist.json",
+    "banned-players.json",
+    "banned-ips.json",
+)
+MAX_RESTORE_FILE_BYTES = 5 * 1024 * 1024
+
+
+def restore_server_files(archive_path: pathlib.Path, server: pathlib.Path) -> None:
+    """Restore Horizon's small server lists/config that its world restore intentionally leaves in place."""
+    restored_total = 0
+    with zipfile.ZipFile(archive_path) as archive:
+        names = set(archive.namelist())
+        for name in RESTORE_FILES:
+            if name not in names:
+                continue
+            info = archive.getinfo(name)
+            file_mode = info.external_attr >> 16
+            if info.is_dir() or stat.S_ISLNK(file_mode):
+                raise RuntimeError(f"Unsafe entry in Horizon backup: {name}")
+            if info.file_size > MAX_RESTORE_FILE_BYTES:
+                raise RuntimeError(f"Backup support file {name} exceeds the restore size limit.")
+            restored_total += info.file_size
+            if restored_total > 20 * 1024 * 1024:
+                raise RuntimeError("Backup server settings/lists exceed the total restore size limit.")
+            contents = archive.read(info)
+            temporary = server / f".{name}.restore"
+            target = server / name
+            temporary.write_bytes(contents)
+            os.replace(temporary, target)
+
+
 def restore_world() -> None:
     store, server = store_path(), pathlib.Path(env("SERVER_DIR"))
     selected = store / "current"
@@ -131,6 +168,10 @@ def restore_world() -> None:
     backup = server / "backups" / "horizon-restore.zip"
     backup.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(selected / "world.zip", backup)
+    # Horizon's native restore command replaces the world directory. The same ZIP also
+    # carries the six server settings/list files; restore those explicitly so OP,
+    # whitelist and ban state survive ephemeral Actions runners as well.
+    restore_server_files(backup, server)
     horizon("restore", "horizon-restore", "--yes")
     print(f"Restored verified snapshot sequence {manifest.get('sequence')}.")
 
