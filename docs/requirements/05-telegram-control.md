@@ -50,8 +50,8 @@ Use actual output from the pinned Horizon CLI. Do not invent JSON fields.
 - Send a server broadcast through Horizon's documented CLI.
 
 /backup
-- Request Horizon backup.
-- Wait for completion, validate archive and checksum, synchronize snapshot.
+- Request a serialized Horizon backup and remote snapshot.
+- Refuse to start a manual backup when less than 30 minutes remain before scheduled shutdown; cap the attempt to 15 minutes.
 - Report both local backup result and remote world-data branch result.
 
 /logs
@@ -59,10 +59,10 @@ Use actual output from the pinned Horizon CLI. Do not invent JSON fields.
 - Never dump environment variables or secrets.
 
 /restart
-- Broadcast notice, use graceful lifecycle, verify final snapshot and dispatch a successor only if continuation is enabled and all checks pass.
+- Restart the Horizon game process through the pinned supervisor CLI. This does not restart the GitHub Actions job or reset its 5h25 session deadline.
 
 /stop
-- Broadcast notice, gracefully stop, persist final world, and set a durable manual-stop state so automatic continuation is disabled.
+- Write a per-session manual-stop marker. The session controller then performs the same graceful stop and final snapshot path; no successor workflow is dispatched.
 
 /help
 - List authorized administration commands.
