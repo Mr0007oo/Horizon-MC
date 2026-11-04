@@ -73,7 +73,7 @@ The initial implementation uses the existing FRP server and only enables the Jav
 
 Bedrock UDP 19132 is not enabled in this first pass. Do not assume Bedrock is available until a tested Geyser/Floodgate/Velocity setup is implemented.
 
-The current workflow sends the FRP Java TCP tunnel directly to Horizon. Horizon is configured to listen on loopback in the Actions runner. The public client endpoint is your FRP hostname on port 25565.
+The current workflow sends the FRP Java TCP tunnel directly to Horizon. Horizon is configured to listen on loopback in the Actions runner. The intended public client endpoint is your FRP hostname on port 25565. The initial workflow checks that the FRPC process remains alive; it does not prove public reachability. Test a real Java 26.3 client before inviting players.
 
 ## 6. Start the first server session
 
@@ -119,8 +119,8 @@ Supported initial commands:
 - /logs
 - /say message
 - /console command
-- /backup
-- /restart
+- /backup (refused within 30 minutes of the scheduled shutdown; max 15-minute attempt)
+- /restart (restarts the Horizon game process, not the Actions session)
 - /stop
 - /help
 
