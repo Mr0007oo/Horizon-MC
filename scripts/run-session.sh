@@ -38,7 +38,12 @@ cleanup() {
     horizon cmd say "Server saving and stopping now. Your world progress is being checkpointed." \
       >> "$SERVER_DIR/logs/session.log" 2>&1
     horizon stop >> "$SERVER_DIR/logs/session.log" 2>&1
-    phase="$(horizon status --json 2>/dev/null | jq -r '.phase // empty' 2>/dev/null)"
+    phase=""
+    for attempt in $(seq 1 30); do
+      phase="$(horizon status --json 2>/dev/null | jq -r '.phase // empty' 2>/dev/null || true)"
+      [[ "$phase" == "stopped" ]] && break
+      sleep 2
+    done
     if [[ "$phase" == "stopped" ]]; then
       echo "Horizon confirms stopped; creating final clean-shutdown snapshot."
       if python3 "$ROOT/scripts/world-data.py" final-snapshot; then
@@ -95,7 +100,12 @@ else
   exit 1
 fi
 
-phase="$(horizon status --json | jq -r '.phase // empty')"
+phase=""
+for attempt in $(seq 1 45); do
+  phase="$(horizon status --json 2>/dev/null | jq -r '.phase // empty' 2>/dev/null || true)"
+  [[ "$phase" == "running" ]] && break
+  sleep 2
+done
 [[ "$phase" == "running" ]] || { echo "Horizon did not report phase=running (phase=$phase)."; exit 1; }
 
 python3 "$ROOT/scripts/configure-frp.py"
@@ -157,9 +167,9 @@ while true; do
     exit 1
   fi
 
-  if [[ "$now" -ge "$next_backup" ]]; then
+  if [[ "$elapsed" -lt 270 && "$now" -ge "$next_backup" ]]; then
     echo "Creating hourly checkpoint..."
-    bash "$ROOT/scripts/checkpoint.sh"
+    timeout --signal=TERM --kill-after=30s 1500s bash "$ROOT/scripts/checkpoint.sh"
     next_backup=$(( now + 3600 ))
   fi
 
