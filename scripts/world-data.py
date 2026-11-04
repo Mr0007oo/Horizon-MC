@@ -163,7 +163,12 @@ def restore_world() -> None:
         selected = store / "previous"
         manifest = validate(selected)
     if manifest is None:
-        print("No verified world snapshot exists yet; first world will be created.")
+        if (store / "current").exists() or (store / "previous").exists():
+            raise RuntimeError(
+                "Snapshot directories exist, but neither current nor previous passes "
+                "manifest, size, checksum and ZIP validation. Refusing to create a fresh world."
+            )
+        print("No prior snapshot exists; first world will be created.")
         return
     backup = server / "backups" / "horizon-restore.zip"
     backup.parent.mkdir(parents=True, exist_ok=True)
