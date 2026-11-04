@@ -19,10 +19,10 @@ Investigate Velocity + Geyser + Floodgate, following Horizon's documented modern
 Horizon supports offline mode, but that mode does not verify account ownership. Public cracked/offline access requires a verified authentication architecture or must remain blocked.
 
 ## DEC-007 — Reuse the existing FRP server
-The owner already operates FRPS. Only implement an FRPC client with separate Java TCP and Bedrock UDP mappings, after checking the installed FRP version.
+The owner already operates FRPS. The initial FRPC client is pinned to v0.71.1 and maps Java TCP 25565 through FRPS control port 7000. Bedrock UDP remains a later, separately tested extension. Confirm the owner's frps version before first live run.
 
 ## DEC-008 — Bounded GitHub Actions sessions
-Warn at 5h20, send second warning at 5h30 and begin graceful shutdown at 5h40 by default. Verify current runner limits and leave a safe exit margin.
+Warn at 5h00, send second warning at 5h15 and begin graceful shutdown at 5h25. The Actions job timeout is 5h50; never target the full six-hour window. Timer checks poll every five seconds; hourly backups stop starting after 4h30 to protect the final shutdown window.
 
 ## DEC-009 — Separate world persistence
 Keep source on main and runtime world snapshots on world-data/<world-id>. Git storage is size-limited; refuse oversized snapshots without damaging the previous valid copy.
@@ -37,12 +37,10 @@ Use numeric Telegram ID allowlists. Telegram messages are never OS shell command
 Create a feature branch based on the latest canonical main, push it to Mr0007oo/Horizon-MC and open a PR into main. Do not push directly to main. When gh CLI authentication fails, test the workspace's existing Git credential transport; stop if remote Git is also unauthorized.
 
 ## Pending decisions
-- Exact pinned Horizon release and commit.
-- Exact Horizon Mixins and SMP revisions.
-- Prepared resources transfer method.
+- Exact Horizon Mixins and SMP revisions for future native mods.
 - Java 26.2 compatibility path.
 - Bedrock dependency versions and authentication.
-- Final FRP client version/config.
-- Maximum world archive size and fallback storage.
-- Continuation cycle/billing budget.
+- Owner's installed frps version and whether it accepts frpc v0.71.1.
+- Maximum world archive size and fallback storage beyond the current conservative limit.
+- Continuation cycle/billing budget (continuation remains disabled).
 - Native hook gaps for requested gameplay features.

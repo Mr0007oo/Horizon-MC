@@ -36,8 +36,8 @@ Start the bot only after the Horizon supervisor/control interface is ready. Stop
 Use actual output from the pinned Horizon CLI. Do not invent JSON fields.
 
  /players
-- Use documented horizon-server players --json if supported by the pinned version.
-- Return online players only; do not expose unnecessary IP addresses.
+- Use the supported `horizon-server cmd list` console command in the pinned v0.2.97 release.
+- Return the Minecraft online-player list only; do not expose unnecessary IP addresses.
 
 /console <Minecraft console command>
 - Only allowlisted users.
@@ -50,8 +50,8 @@ Use actual output from the pinned Horizon CLI. Do not invent JSON fields.
 - Send a server broadcast through Horizon's documented CLI.
 
 /backup
-- Request Horizon backup.
-- Wait for completion, validate archive and checksum, synchronize snapshot.
+- Request a serialized Horizon backup and remote snapshot.
+- Refuse to start a manual backup when less than 30 minutes remain before scheduled shutdown; cap the attempt to 15 minutes.
 - Report both local backup result and remote world-data branch result.
 
 /logs
@@ -59,10 +59,10 @@ Use actual output from the pinned Horizon CLI. Do not invent JSON fields.
 - Never dump environment variables or secrets.
 
 /restart
-- Broadcast notice, use graceful lifecycle, verify final snapshot and dispatch a successor only if continuation is enabled and all checks pass.
+- Restart the Horizon game process through the pinned supervisor CLI. This does not restart the GitHub Actions job or reset its 5h25 session deadline.
 
 /stop
-- Broadcast notice, gracefully stop, persist final world, and set a durable manual-stop state so automatic continuation is disabled.
+- Write a per-session manual-stop marker. The session controller then performs the same graceful stop and final snapshot path; no successor workflow is dispatched.
 
 /help
 - List authorized administration commands.
@@ -74,8 +74,8 @@ Send concise notifications for:
 - Java endpoint health.
 - Bedrock endpoint health if enabled.
 - Player join/leave if event stream support is verified.
-- 5h20 warning.
-- 5h30 warning.
+- 5h00 warning.
+- 5h15 warning.
 - Shutdown start and completion.
 - Backup start/success/failure.
 - Snapshot push and remote verification.
@@ -93,7 +93,7 @@ If Telegram is unavailable:
 - Record the notification failure in workflow logs without exposing token.
 - Do not shut down the server solely because Telegram is unavailable.
 
-On reconnection, resume safely using the Telegram update offset. Never replay a potentially destructive administrative command as a result of a duplicate update.
+The bot advances the Telegram update offset for every received update and ignores messages whose timestamp predates the current bot process start. This prevents queued commands from an earlier Actions session from being replayed. Never replay a potentially destructive administrative command as a result of a duplicate update.
 
 ## Acceptance tests
 

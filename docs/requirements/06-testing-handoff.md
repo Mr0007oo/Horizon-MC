@@ -59,7 +59,7 @@ Test claims + Vein Miner; claims + schematic; homes + waypoints; TPA + duels; En
 
 ## Lifecycle simulation
 
-Do not use a full 6-hour real workflow as the first lifecycle test. Add a test-only clock/interval configuration so the 320m warning, 330m warning, 340m shutdown, retry/backoff, failed push, invalid archive, manual stop, cancellation, duplicate dispatch and budget-exceeded paths can be simulated quickly. Test mode must be impossible to enable accidentally in production.
+Do not use a full 6-hour real workflow as the first lifecycle test. Add a test-only clock/interval configuration so the 300m warning, 315m warning, 325m shutdown, retry/backoff, failed push, invalid archive, manual stop, cancellation, duplicate dispatch and budget-exceeded paths can be simulated quickly. Test mode must be impossible to enable accidentally in production.
 
 ## IMPLEMENTATION_STATUS.md
 

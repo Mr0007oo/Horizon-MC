@@ -1,64 +1,101 @@
 # Horizon MC — Implementation Status
 
-**State:** Specification initialized; implementation not yet verified.  
+**State:** Initial runtime bootstrap implemented; latest push and pull-request validation passed; owner setup and live smoke test remain.
+**Latest validated commit:** `1ac38fe833886d3318ad4c4c36e735a5ee87dee2`  
 **Canonical repository:** https://github.com/Mr0007oo/Horizon-MC  
-**Default branch:** main
+**Default branch:** main  
+**Current implementation branch:** copilot/initial-runtime-bootstrap
 
-## Project phases
+## Implemented in the current PR
 
-| Area | Initial state | Evidence/next action |
+| Area | State | Evidence / next action |
 |---|---|---|
-| Horizon upstream | RESEARCHING | Verify pinned release and executable |
-| Prepared 26.3 resources | BLOCKED | Owner must supply prepared resources from their own copy |
-| Dedicated server startup | NOT_STARTED | Bootstrap and health test |
-| FRP Java TCP | NOT_STARTED | Verify FRP client/server config and mapping |
-| FRP Bedrock UDP | NOT_STARTED | Enable only with tested Geyser path |
-| Velocity forwarding | RESEARCHING | Verify exact release and modern forwarding |
-| Geyser/Floodgate | RESEARCHING | Verify current compatibility end to end |
-| Java 26.3 | RESEARCHING | Native target; run client integration test |
-| Java 26.2 | BLOCKED_PENDING_RESEARCH | Protocol translation not established |
-| Offline/cracked authentication | BLOCKED_PENDING_RESEARCH | Offline mode alone does not authenticate |
-| Hourly checkpoint | NOT_STARTED | Implement consistent backup and remote verification |
-| world-data storage | NOT_STARTED | Test archive size and branch strategy |
-| Graceful session shutdown | NOT_STARTED | Simulated lifecycle test |
-| Optional continuation | NOT_STARTED | Disabled by default; budget and restrictions |
-| Telegram bot | NOT_STARTED | Use existing TELEGRAM_BOT_TOKEN secret |
-| Homes | RESEARCHING | Official SMP baseline; verify pinned compatibility |
-| TPA | RESEARCHING | Official SMP baseline; add aliases |
-| Claims/trust | RESEARCHING | Official SMP baseline; test all mutation hooks |
-| Personal waypoints | NOT_STARTED | Implement custom native mod |
-| Vein Miner | NOT_STARTED | Implement custom native mod |
-| Self-service /ec | NOT_STARTED | Implement safely; distinct from /endersee |
-| PvP duels | NOT_STARTED | Implement custom native mod |
-| Schematic import | BLOCKED_PENDING_RESEARCH | Format/parser and hooks need verification |
-| Combined gameplay regression | NOT_STARTED | Required before feature VERIFIED |
+| Horizon installer | CI_VALIDATED | Pinned v0.2.97 installer script; live install still needs runner test |
+| FRP client | CI_VALIDATED | Pinned v0.71.1 Linux AMD64 archive and SHA-256 |
+| Java TCP tunnel config | CI_VALIDATED | Generated FRPC TOML; test against owner's FRPS |
+| Prepared 26.3 resources | BLOCKED_ON_OWNER | Upload private resources-26.3 release with archive and checksum |
+| Dedicated server startup | IMPLEMENTED_NOT_LIVE_TESTED | Manual Actions workflow and Horizon CLI init/start |
+| Seed isolation | IMPLEMENTED | Initial seed 9064150133272194; branch world-data/survival-9064150133272194-26.3 |
+| Hourly snapshot | CI_VALIDATED | ZIP CRC, SHA-256 manifest and dedicated branch; live server test pending |
+| Current/previous rotation | CI_VALIDATED | Only verified current rotates to previous |
+| Snapshot restore | CI_VALIDATED | Current then previous fallback; invalid snapshots fail closed; server lists/settings restored |
+| Final shutdown save | IMPLEMENTED_PENDING_LIVE_TEST | Graceful stop at 325m, then CLI final backup and remote verification |
+| Workflow timeout | IMPLEMENTED | 350 minutes (5h50m) |
+| Lifecycle warnings | CI_VALIDATED | 300m and 315m; shutdown starts at 325m; 5-second polling |
+| Telegram notifier | IMPLEMENTED_NOT_LIVE_TESTED | Uses existing token secret and alert chat ID |
+| Telegram control bot | CI_VALIDATED | Numeric allowlists, no shell execution, stale-update filtering, manual-backup cutoff |
+| Static/portable tests | PASS | Python compileall, Bash syntax and all ten offline tests pass on latest validated commit |
+| FRP public endpoint | PENDING_LIVE_TEST | Requires FRP_SERVER_ADDR and FRP_AUTH_TOKEN |
+| Bedrock UDP | NOT_IMPLEMENTED | Later Velocity/Geyser/Floodgate task |
+| Java 26.2 client | BLOCKED_PENDING_RESEARCH | Protocol translation not established |
+| Offline/cracked authentication | BLOCKED | Offline mode alone does not authenticate identities |
+| Homes / TPA / claims | RESEARCHING | Verify official SMP compatibility and build integration |
+| Personal waypoints | NOT_STARTED | Custom native mod needed |
+| Vein Miner | NOT_STARTED | Custom native mod needed |
+| Self-service /ec | NOT_STARTED | Custom native mod needed; distinct from /endersee |
+| PvP duels | NOT_STARTED | Custom native mod needed |
+| Schematic import | BLOCKED_PENDING_RESEARCH | Parser format and server mutation hooks need verification |
+| Combined gameplay regression | NOT_STARTED | Required before gameplay features are VERIFIED |
 
 ## Pinned upstream revisions
 
-Fill only after checking out and testing exact commits:
+- Horizon release: v0.2.97
+- Horizon commit: a3acb5f0d2f59d2d5ff21a5aa000809ba1e35e2f
+- Minecraft target: Java Edition 26.3
+- FRP release: v0.71.1
+- FRP Linux AMD64 SHA-256: 1d9875210972a5d1a62b2dc4c48df45ab0af05d3ca1b5e494a014428259df803
+- See [UPSTREAM-PINS.md](docs/UPSTREAM-PINS.md).
 
-- Horizon repository:
-- Horizon commit:
-- Horizon release:
-- Horizon Mixins commit:
-- Official SMP commit:
-- Custom native mod revision:
-- Runtime artifact and SHA-256:
+## World identity
+
+- World: survival
+- Seed: 9064150133272194
+- Version: 26.3
+- Snapshot branch: world-data/survival-9064150133272194-26.3
+
+## Lifecycle policy
+
+- 5h00m: first warning.
+- 5h15m: second warning.
+- 5h25m: graceful shutdown begins.
+- 5h50m: hard workflow timeout.
+- Automatic continuation: disabled.
+
+Do not drift back to 5h40m shutdown or use the full six-hour window.
 
 ## Verification log
 
-No runtime build, client test, world backup or restore test has yet been performed by this repository initialization.
+Latest validated commit: `1ac38fe833886d3318ad4c4c36e735a5ee87dee2`.
 
-## Known blockers
+- Push validation [run 41775433347](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775433347): success.
+- Pull request validation [run 41775439286](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775439286): success.
+- Python compileall: passed.
+- Bash syntax checks: passed.
+- Offline helper suite: all ten tests passed.
 
-1. Prepared game resources must be supplied by the owner.
-2. Java 26.2 client protocol compatibility is not established.
-3. Public offline-mode identity/authentication design is not yet verified.
-4. FRP server version and exact server config must be inspected.
-5. Bedrock proxy and Geyser/Floodgate versions must be pinned and tested.
-6. Git snapshot storage limits may be exceeded by a growing world.
-7. Missing custom gameplay features require real native hooks and combined tests.
+Coverage includes prepared resource archive extraction and traversal rejection, required Horizon resource manifest, downloader variable expansion, FRP token separation, stale Telegram update filtering, snapshot identity/seed/level.dat validation, fail-closed restore, server settings/operator/whitelist restoration, snapshot rotation/remote verification and lifecycle timing.
 
-## Next task
+The Minecraft runtime workflow is manual-dispatch only. Push events do not start a server.
 
-Complete Phase 0 feasibility research and write docs/ARCHITECTURE.md before starting gameplay implementation.
+No end-to-end test has yet proved:
+- the prepared private resource archive is accepted by the pinned binary;
+- the owner's frps accepts the pinned frpc config;
+- a real Java client can join via the public FRP endpoint;
+- a real world can be restored and final-saved on Actions.
+
+## Required owner action
+
+1. Add the private release tag resources-26.3 with the prepared resources archive and its .sha256 asset.
+2. Set FRP_SERVER_ADDR variable and FRP_AUTH_TOKEN secret.
+3. Keep TELEGRAM_BOT_TOKEN secret and add numeric Telegram allowlists/alert chat ID if using bot control.
+4. Merge PR after the latest validation run succeeds, then execute one controlled first session.
+
+See [Codespaces setup](docs/SETUP-CODESPACES.md).
+
+## Next implementation tasks
+
+1. Review CI and fix any failures before merge.
+2. Validate prepared resource upload and first server boot.
+3. Test FRP tunnel from a real Minecraft Java 26.3 client.
+4. Test world backup, second-run restore and final save.
+5. Then implement compatible official SMP native modules and requested missing features.

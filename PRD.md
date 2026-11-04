@@ -1,6 +1,6 @@
 # Horizon MC — Master Product Requirements Document
 
-**Version:** 2.1  
+**Version:** 2.3  
 **Repository:** https://github.com/Mr0007oo/Horizon-MC  
 **Primary branch:** main  
 **Runtime:** Horizon Minecraft Rust dedicated server  
@@ -8,7 +8,7 @@
 **Networking:** Owner-provided FRP server  
 **Administration:** Telegram Bot  
 **Persistence:** Dedicated world-data branch  
-**Status:** Specification; implementation not yet verified
+**Status:** Initial implementation committed in the open bootstrap PR; live deployment not yet verified
 
 ---
 
@@ -58,10 +58,10 @@ These are research baselines, not permission to skip version-pinned verification
 - Investigate Java Edition 26.2 client compatibility independently; world-save migration is not client protocol compatibility.
 - Investigate Bedrock cross-play through Velocity + Geyser + Floodgate.
 - Support offline-mode clients only with clearly documented identity and impersonation risks.
-- Warn players at 5h20m of job elapsed time.
-- Send a second warning at 5h30m.
-- Begin graceful shutdown at 5h40m, leaving time for verification and persistence before the configured job timeout.
-- Create an hourly checkpoint while the server is running.
+- Send a first maintenance warning at 5h00m of job elapsed time.
+- Send a second warning at 5h15m.
+- Begin graceful shutdown at exactly 5h25m (325 minutes) of job elapsed time, leaving a 25-minute save/push window before the 5h50m job timeout.
+- Create consistent checkpoints on the job-start hourly boundaries while the server is running, but do not start another checkpoint after 4h30m.
 - Create and verify a final checkpoint after graceful shutdown.
 - Persist world and player data on a dedicated world-data/<world-id> branch, not main.
 - Control and monitor the server using an allowlisted Telegram bot.
@@ -74,7 +74,7 @@ The detailed requirements are normative and must be read alongside this master P
 
 | File | Scope |
 |---|---|
-| [01-hosting-lifecycle.md](docs/requirements/01-hosting-lifecycle.md) | Actions session lifecycle, 5h20 warning, hourly snapshots, graceful shutdown, continuation |
+| [01-hosting-lifecycle.md](docs/requirements/01-hosting-lifecycle.md) | Actions session lifecycle, 5h00 and 5h15 warnings, graceful shutdown at 5h25, hourly snapshots |
 | [02-persistence.md](docs/requirements/02-persistence.md) | world-data branch, snapshot format, integrity, recovery, seed isolation |
 | [03-networking-crossplay.md](docs/requirements/03-networking-crossplay.md) | FRP variables and transport, Velocity, Geyser, Floodgate, version and offline-mode verification |
 | [04-gameplay-mods.md](docs/requirements/04-gameplay-mods.md) | official SMP reuse, homes, waypoints, TPA, Vein Miner, Ender Chest, duels, claims, schematic import |
@@ -137,18 +137,18 @@ The owner has already configured TELEGRAM_BOT_TOKEN. Never request that token in
 
 ## 8. GitHub Actions session lifecycle
 
-The default project timing is measured from the start of the Actions job, not from the moment Minecraft becomes ready:
+The default project timing starts at the first job step, before checkout, and is measured from the allocated Actions job start:
 
 | Elapsed job time | Operation |
 |---|---|
 | 0m | Validate inputs, secrets, concurrency and runner |
 | 0–10m | Restore world and initialize runtime/network |
-| 60m intervals | Consistent backup and remote checkpoint |
-| 320m (5h20m) | First player and Telegram warning |
-| 330m (5h30m) | Second warning |
-| 340m (5h40m) | Begin graceful shutdown |
-| 340–352m | Final backup, validation, push and verification |
-| Before 355m | Workflow exits before its configured timeout |
+| 60m, 120m, 180m and 240m | Consistent backup and remote checkpoint; no hourly job starts after 4h30m |
+| 300m (5h00m) | First player and Telegram warning |
+| 315m (5h15m) | Second warning |
+| 325m (5h25m) | Begin graceful shutdown immediately |
+| 325–345m | Final backup, validation, push and verification |
+| 350m (5h50m) | Hard workflow timeout; 10-minute safety margin remains before six hours |
 
 These timings are project defaults, not GitHub platform guarantees. At implementation time verify the applicable runner/job timeout and retain a safety margin. If bootstrap time or platform limits make the schedule unsafe, adjust it and document the decision.
 
@@ -173,7 +173,7 @@ This mechanism does not guarantee 24/7 operation. A 30-day month of uninterrupte
 
 ## 10. Persistence architecture
 
-Use a separate branch for each world identity:
+The initial world seed supplied by the owner is **9064150133272194**. The initial world name is `survival`, game version is `26.3`, and world ID is `survival-9064150133272194-26.3`. Use a separate branch for each world identity:
 
 world-data/<world-id>
 
@@ -278,7 +278,8 @@ The project is complete only when:
 - Java 26.3 works; Java 26.2 is only advertised if integration tests prove it.
 - Offline mode risks and identity handling are documented and tested.
 - Hourly checkpoints and final checkpoint pass integrity tests.
-- The 5h20 and 5h30 notices arrive.
+- The 5h00 and 5h15 notices arrive.
+- Graceful shutdown begins at 5h25, not later.
 - Graceful shutdown finishes before job timeout.
 - A failed save or push prevents continuation.
 - Restore and rollback are tested.
