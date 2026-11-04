@@ -74,6 +74,36 @@ class RuntimeHelpersTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("horizon-resources.json", result.stderr + result.stdout)
 
+    def test_invalid_saved_snapshot_refuses_to_create_a_new_world(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = pathlib.Path(tmp)
+            store = base / "world-store"
+            server = base / "server"
+            (store / "current").mkdir(parents=True)
+            server.mkdir()
+            (store / "current/world.zip").write_bytes(b"not-a-zip")
+            (store / "current/manifest.json").write_text(
+                json.dumps({
+                    "world_id": "survival-9064150133272194-26.3",
+                    "archive": "world.zip",
+                    "size_bytes": len(b"not-a-zip"),
+                    "sha256": "deliberately-wrong",
+                })
+            )
+            env = os.environ.copy()
+            env.update({
+                "WORLD_STORE_DIR": str(store),
+                "SERVER_DIR": str(server),
+                "WORLD_ID": "survival-9064150133272194-26.3",
+            })
+            result = run(
+                [sys.executable, str(ROOT / "scripts/world-data.py"), "restore"],
+                env=env,
+                check=False,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Refusing to create a fresh world", result.stderr)
+
     def test_frp_config_does_not_embed_token(self):
         with tempfile.TemporaryDirectory() as tmp:
             env = os.environ.copy()
