@@ -24,6 +24,7 @@ ALLOWED_CHATS = {
 SERVER_DIR = os.environ.get("SERVER_DIR", "")
 ROOT = pathlib.Path(os.environ.get("GITHUB_WORKSPACE", "."))
 HORIZON = os.environ.get("HORIZON_BIN", "horizon-server")
+BOT_STARTED_EPOCH = int(time.time())
 
 
 def api(method: str, payload: dict | None = None, timeout: int = 35):
@@ -35,6 +36,14 @@ def api(method: str, payload: dict | None = None, timeout: int = 35):
     if not result.get("ok"):
         raise RuntimeError("Telegram API returned ok=false")
     return result["result"]
+
+
+def is_fresh_message(message: dict, started_at: int = BOT_STARTED_EPOCH) -> bool:
+    """Never replay a command left queued from a previous Actions session."""
+    try:
+        return int(message.get("date", 0)) >= started_at
+    except (TypeError, ValueError):
+        return False
 
 
 def send(chat_id: int, message: str) -> None:
@@ -138,6 +147,9 @@ def main() -> int:
                 offset = max(offset, int(update["update_id"]) + 1)
                 message = update.get("message") or update.get("edited_message")
                 if not message or not message.get("text"):
+                    continue
+                if not is_fresh_message(message):
+                    # Still advance the update offset, but don't replay commands from an earlier run.
                     continue
                 user_id = str(message.get("from", {}).get("id", ""))
                 chat_id = int(message.get("chat", {}).get("id", 0))
