@@ -1,6 +1,7 @@
 # Horizon MC — Implementation Status
 
-**State:** Initial runtime bootstrap implemented; CI validation is being rerun after resource-manifest and fail-closed restore changes; first live smoke test remains.  
+**State:** Initial runtime bootstrap implemented; latest push and pull-request validation passed; owner setup and live smoke test remain.
+**Latest validated commit:** `1ac38fe833886d3318ad4c4c36e735a5ee87dee2`  
 **Canonical repository:** https://github.com/Mr0007oo/Horizon-MC  
 **Default branch:** main  
 **Current implementation branch:** copilot/initial-runtime-bootstrap
@@ -9,21 +10,21 @@
 
 | Area | State | Evidence / next action |
 |---|---|---|
-| Horizon installer | IMPLEMENTED | Pinned v0.2.97 installer script; verify in Actions |
-| FRP client | IMPLEMENTED | Pinned v0.71.1 Linux AMD64, SHA-256 verified |
-| Java TCP tunnel config | IMPLEMENTED | Generated FRPC TOML; test against owner's FRPS |
+| Horizon installer | CI_VALIDATED | Pinned v0.2.97 installer script; live install still needs runner test |
+| FRP client | CI_VALIDATED | Pinned v0.71.1 Linux AMD64 archive and SHA-256 |
+| Java TCP tunnel config | CI_VALIDATED | Generated FRPC TOML; test against owner's FRPS |
 | Prepared 26.3 resources | BLOCKED_ON_OWNER | Upload private resources-26.3 release with archive and checksum |
 | Dedicated server startup | IMPLEMENTED_NOT_LIVE_TESTED | Manual Actions workflow and Horizon CLI init/start |
 | Seed isolation | IMPLEMENTED | Initial seed 9064150133272194; branch world-data/survival-9064150133272194-26.3 |
-| Hourly snapshot | IMPLEMENTED_PENDING_CI | ZIP CRC, SHA-256 manifest and dedicated branch |
-| Current/previous rotation | IMPLEMENTED_PENDING_CI | Only verified current rotates to previous |
-| Snapshot restore | IMPLEMENTED_PENDING_CI | Current then previous checksum fallback |
+| Hourly snapshot | CI_VALIDATED | ZIP CRC, SHA-256 manifest and dedicated branch; live server test pending |
+| Current/previous rotation | CI_VALIDATED | Only verified current rotates to previous |
+| Snapshot restore | CI_VALIDATED | Current then previous fallback; invalid snapshots fail closed; server lists/settings restored |
 | Final shutdown save | IMPLEMENTED_PENDING_LIVE_TEST | Graceful stop at 325m, then CLI final backup and remote verification |
 | Workflow timeout | IMPLEMENTED | 350 minutes (5h50m) |
-| Lifecycle warnings | IMPLEMENTED_PENDING_TEST | 300m and 315m; shutdown starts at 325m |
+| Lifecycle warnings | CI_VALIDATED | 300m and 315m; shutdown starts at 325m; 5-second polling |
 | Telegram notifier | IMPLEMENTED_NOT_LIVE_TESTED | Uses existing token secret and alert chat ID |
-| Telegram control bot | IMPLEMENTED_PENDING_TEST | Numeric user/chat allowlists and no shell execution |
-| Static/portable tests | PASSING_ON_PRIOR_CHECKPOINT | Previous PR run passed compileall, Bash syntax and all offline tests; latest resource/restore regression run must be checked |
+| Telegram control bot | CI_VALIDATED | Numeric allowlists, no shell execution, stale-update filtering, manual-backup cutoff |
+| Static/portable tests | PASS | Python compileall, Bash syntax and all ten offline tests pass on latest validated commit |
 | FRP public endpoint | PENDING_LIVE_TEST | Requires FRP_SERVER_ADDR and FRP_AUTH_TOKEN |
 | Bedrock UDP | NOT_IMPLEMENTED | Later Velocity/Geyser/Floodgate task |
 | Java 26.2 client | BLOCKED_PENDING_RESEARCH | Protocol translation not established |
@@ -64,7 +65,17 @@ Do not drift back to 5h40m shutdown or use the full six-hour window.
 
 ## Verification log
 
-The bootstrap contains offline tests for complete Horizon resource extraction, archive path safety, resource downloader variable expansion, FRP secret separation, stale Telegram message filtering, invalid-snapshot fail-closed behavior, server-list restore, world snapshot branch rotation and timer thresholds. PR validation run 41773567179 passed compileall, Bash syntax and all five offline tests before the final 5h25 late-checkpoint guard. A fresh PR run is pending for the latest commit.
+Latest validated commit: `1ac38fe833886d3318ad4c4c36e735a5ee87dee2`.
+
+- Push validation [run 41775433347](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775433347): success.
+- Pull request validation [run 41775439286](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775439286): success.
+- Python compileall: passed.
+- Bash syntax checks: passed.
+- Offline helper suite: all ten tests passed.
+
+Coverage includes prepared resource archive extraction and traversal rejection, required Horizon resource manifest, downloader variable expansion, FRP token separation, stale Telegram update filtering, snapshot identity/seed/level.dat validation, fail-closed restore, server settings/operator/whitelist restoration, snapshot rotation/remote verification and lifecycle timing.
+
+The Minecraft runtime workflow is manual-dispatch only. Push events do not start a server.
 
 No end-to-end test has yet proved:
 - the prepared private resource archive is accepted by the pinned binary;
