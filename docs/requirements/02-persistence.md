@@ -111,7 +111,7 @@ Git history does not behave like a rolling database, and deleting old paths does
 
 ## Restore algorithm
 
-Create scripts/restore.sh.
+Use `scripts/world-data.py restore` as the restore entry point.
 
 1. Calculate validated world ID.
 2. Fetch matching world-data branch.
