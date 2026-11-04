@@ -173,7 +173,7 @@ while true; do
     next_backup=$(( now + 3600 ))
   fi
 
-  sleep 20
+  sleep 5
 done
 
 echo "Session time limit or manual stop reached. EXIT handler will save and shut down."
