@@ -1,6 +1,6 @@
 # Horizon MC — Master Product Requirements Document
 
-**Version:** 2.2  
+**Version:** 2.3  
 **Repository:** https://github.com/Mr0007oo/Horizon-MC  
 **Primary branch:** main  
 **Runtime:** Horizon Minecraft Rust dedicated server  
@@ -74,7 +74,7 @@ The detailed requirements are normative and must be read alongside this master P
 
 | File | Scope |
 |---|---|
-| [01-hosting-lifecycle.md](docs/requirements/01-hosting-lifecycle.md) | Actions session lifecycle, 5h20 warning, hourly snapshots, graceful shutdown, continuation |
+| [01-hosting-lifecycle.md](docs/requirements/01-hosting-lifecycle.md) | Actions session lifecycle, 5h00 and 5h15 warnings, graceful shutdown at 5h25, hourly snapshots |
 | [02-persistence.md](docs/requirements/02-persistence.md) | world-data branch, snapshot format, integrity, recovery, seed isolation |
 | [03-networking-crossplay.md](docs/requirements/03-networking-crossplay.md) | FRP variables and transport, Velocity, Geyser, Floodgate, version and offline-mode verification |
 | [04-gameplay-mods.md](docs/requirements/04-gameplay-mods.md) | official SMP reuse, homes, waypoints, TPA, Vein Miner, Ender Chest, duels, claims, schematic import |
@@ -137,7 +137,7 @@ The owner has already configured TELEGRAM_BOT_TOKEN. Never request that token in
 
 ## 8. GitHub Actions session lifecycle
 
-The default project timing is measured from the start of the Actions job, not from the moment Minecraft becomes ready:
+The default project timing starts at the first job step, before checkout, and is measured from the allocated Actions job start:
 
 | Elapsed job time | Operation |
 |---|---|
