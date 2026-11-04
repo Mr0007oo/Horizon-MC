@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import pathlib
@@ -109,6 +110,16 @@ class RuntimeHelpersTests(unittest.TestCase):
         self.assertNotIn(r"\${", script)
         self.assertIn('${GITHUB_REPOSITORY}', script)
         self.assertIn("headers[@]", script)
+
+    def test_telegram_bot_ignores_messages_from_before_startup(self):
+        spec = importlib.util.spec_from_file_location(
+            "horizon_telegram_bot", ROOT / "scripts/telegram-bot.py"
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        self.assertFalse(module.is_fresh_message({"date": 99}, started_at=100))
+        self.assertTrue(module.is_fresh_message({"date": 100}, started_at=100))
+        self.assertFalse(module.is_fresh_message({"date": "invalid"}, started_at=100))
 
     def test_frp_config_does_not_embed_token(self):
         with tempfile.TemporaryDirectory() as tmp:
