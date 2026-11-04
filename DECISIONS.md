@@ -22,7 +22,7 @@ Horizon supports offline mode, but that mode does not verify account ownership. 
 The owner already operates FRPS. Only implement an FRPC client with separate Java TCP and Bedrock UDP mappings, after checking the installed FRP version.
 
 ## DEC-008 — Bounded GitHub Actions sessions
-Warn at 5h20, send second warning at 5h30 and begin graceful shutdown at 5h40 by default. Verify current runner limits and leave a safe exit margin.
+Warn at 5h00, send second warning at 5h15 and begin graceful shutdown at 5h25. The current Actions job timeout is 5h50; never target the full six-hour window.
 
 ## DEC-009 — Separate world persistence
 Keep source on main and runtime world snapshots on world-data/<world-id>. Git storage is size-limited; refuse oversized snapshots without damaging the previous valid copy.
