@@ -64,7 +64,7 @@ Do not drift back to 5h40m shutdown or use the full six-hour window.
 
 ## Verification log
 
-The bootstrap contains offline tests for complete Horizon resource extraction, archive path safety, FRP secret separation, invalid-snapshot fail-closed behavior, server-list restore, world snapshot branch rotation and timer thresholds. PR validation run 41773567179 passed compileall, Bash syntax and all five offline tests before the final 5h25 late-checkpoint guard. A fresh run is pending for the latest commit.
+The bootstrap contains offline tests for complete Horizon resource extraction, archive path safety, resource downloader variable expansion, FRP secret separation, stale Telegram message filtering, invalid-snapshot fail-closed behavior, server-list restore, world snapshot branch rotation and timer thresholds. PR validation run 41773567179 passed compileall, Bash syntax and all five offline tests before the final 5h25 late-checkpoint guard. A fresh PR run is pending for the latest commit.
 
 No end-to-end test has yet proved:
 - the prepared private resource archive is accepted by the pinned binary;
