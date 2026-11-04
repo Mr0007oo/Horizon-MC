@@ -143,6 +143,8 @@ print("Backed up to backups/" + name)
         self.assertIn('"$elapsed" -ge 315', script)
         self.assertIn('"$elapsed" -ge 325', script)
         self.assertNotIn('"$elapsed" -ge 340', script)
+        self.assertIn('"$elapsed" -lt 270', script)
+        self.assertIn('timeout --signal=TERM --kill-after=30s 1500s', script)
 
 
 if __name__ == "__main__":
