@@ -139,10 +139,10 @@ print("Backed up to backups/" + name)
 
     def test_session_deadline_is_325_minutes(self):
         script = (ROOT / "scripts/run-session.sh").read_text(encoding="utf-8")
-        self.assertIn('"elapsed" -ge 300', script)
-        self.assertIn('"elapsed" -ge 315', script)
-        self.assertIn('"elapsed" -ge 325', script)
-        self.assertNotIn('"elapsed" -ge 340', script)
+        self.assertIn('"$elapsed" -ge 300', script)
+        self.assertIn('"$elapsed" -ge 315', script)
+        self.assertIn('"$elapsed" -ge 325', script)
+        self.assertNotIn('"$elapsed" -ge 340', script)
 
 
 if __name__ == "__main__":
