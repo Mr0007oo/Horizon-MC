@@ -20,6 +20,7 @@ The private resource archive expected by this project must have this shape:
 
     horizon-resources-26.3.tar.gz
       26.3/
+        horizon-resources.json
         registries.json
         commands.json
         ...other prepared Horizon game data...
@@ -103,7 +104,7 @@ The controller measures time from the first workflow step (before checkout and i
 
 - 5h00m: first in-game/Telegram warning
 - 5h15m: second warning
-- 5h25m: graceful shutdown begins
+- 5h25m: graceful shutdown begins (controller polls every 5 seconds)
 - 5h50m: workflow hard timeout
 
 This deliberately leaves a shutdown buffer and does not use the full six-hour window. The actual final save and Git push must finish before the workflow timeout. Automatic continuation is not enabled; manually start another session after checking that the previous run completed successfully.
