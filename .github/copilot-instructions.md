@@ -94,11 +94,11 @@ A GitHub CLI-only error must not cause Copilot to abandon a working authenticate
 
 ## 7. Hosting and persistence
 
-Follow docs/requirements/01-hosting-lifecycle.md and 02-persistence.md.
+Follow docs/requirements/01-hosting-lifecycle.md and 02-persistence.md. The current lifecycle target is a first warning at 5h00m, second warning at 5h15m, graceful shutdown starting at 5h25m, and a 5h50m hard job timeout. Do not drift back to 5h40m or use the full six-hour window.
 
 GitHub Actions is a bounded session runner, not a permanent VM. A successor session is optional, budget-controlled and only allowed after a verified final snapshot. No quota evasion and no guarantee of uninterrupted 24/7 availability.
 
-Use the world-data/<world-id> branch exclusively for runtime snapshots. Never put runtime backups on main. Use Horizon's consistent backup mechanism. Never archive an actively mutating world directory without a documented consistent snapshot procedure.
+Initial world seed is 9064150133272194; initial world ID is survival-9064150133272194-26.3. Use the world-data/<world-id> branch exclusively for runtime snapshots. Never put runtime backups on main. Use Horizon's consistent backup mechanism. Never archive an actively mutating world directory without a documented consistent snapshot procedure.
 
 ## 8. Networking
 
