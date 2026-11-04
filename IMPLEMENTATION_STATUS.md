@@ -89,7 +89,7 @@ No end-to-end test has yet proved:
 1. Add the private release tag resources-26.3 with the prepared resources archive and its .sha256 asset.
 2. Set FRP_SERVER_ADDR variable and FRP_AUTH_TOKEN secret.
 3. Keep TELEGRAM_BOT_TOKEN secret and add numeric Telegram allowlists/alert chat ID if using bot control.
-4. Review and merge PR #1 when ready, then execute one controlled first session.
+4. PR #1 is already merged; after completing the resource and Actions setup, launch the workflow manually for one controlled first session.
 
 See [Codespaces setup](docs/SETUP-CODESPACES.md).
 
