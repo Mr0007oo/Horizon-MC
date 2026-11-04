@@ -1,0 +1,145 @@
+name: Horizon Minecraft Server
+
+on:
+  workflow_dispatch:
+    inputs:
+      accept_eula:
+        description: "I agree to the Minecraft EULA (required to start the server)"
+        required: true
+        type: boolean
+        default: false
+      operator_username:
+        description: "Your Java Minecraft account username (used to grant OP on first setup)"
+        required: true
+        type: string
+      world_seed:
+        description: "World seed (default is the seed you supplied)"
+        required: true
+        type: string
+        default: "9064150133272194"
+
+run-name: "Horizon MC - ${{ inputs.operator_username }}"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: horizon-minecraft-runtime
+  cancel-in-progress: false
+
+jobs:
+  server:
+    name: Run Horizon server session
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    env:
+      HORIZON_VERSION: v0.2.97
+      FRP_VERSION: 0.71.1
+      WORLD_NAME: survival
+      WORLD_SEED: ${{ inputs.world_seed }}
+      OPERATOR_USERNAME: ${{ inputs.operator_username }}
+      ACCEPT_MINECRAFT_EULA: ${{ inputs.accept_eula }}
+      FRP_SERVER_ADDR: ${{ vars.FRP_SERVER_ADDR }}
+      FRP_SERVER_PORT: "7000"
+      FRP_AUTH_TOKEN: ${{ secrets.FRP_AUTH_TOKEN }}
+      FRP_JAVA_REMOTE_PORT: "25565"
+      FRP_JAVA_LOCAL_PORT: "25565"
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_ALLOWED_USER_IDS: ${{ vars.TELEGRAM_ALLOWED_USER_IDS }}
+      TELEGRAM_ALLOWED_CHAT_IDS: ${{ vars.TELEGRAM_ALLOWED_CHAT_IDS }}
+      TELEGRAM_ALERT_CHAT_ID: ${{ vars.TELEGRAM_ALERT_CHAT_ID }}
+      HORIZON_RESOURCES_RELEASE_TAG: resources-26.3
+      HORIZON_RESOURCES_ASSET: horizon-resources-26.3.tar.gz
+      WORLD_ID: survival-${{ inputs.world_seed }}-26.3
+      WORLD_BRANCH: world-data/survival-${{ inputs.world_seed }}-26.3
+      SERVER_DIR: ${{ runner.temp }}/horizon-server
+      HORIZON_DATA_DIR: ${{ runner.temp }}/horizon-data
+      FRP_DIR: ${{ runner.temp }}/frp
+      WORLD_STORE_DIR: ${{ runner.temp }}/world-store
+
+    steps:
+      - name: Checkout canonical repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Capture job start time
+        shell: bash
+        run: echo "JOB_STARTED_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Validate inputs and install system tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$ACCEPT_MINECRAFT_EULA" == "true" ]] || {
+            echo "::error::You must accept the Minecraft EULA in the workflow input."
+            exit 1
+          }
+          [[ "$WORLD_SEED" =~ ^-?[0-9]{1,20}$ ]] || {
+            echo "::error::World seed must be a numeric Minecraft seed."
+            exit 1
+          }
+          [[ "$OPERATOR_USERNAME" =~ ^[A-Za-z0-9_]{3,16}$ ]] || {
+            echo "::error::Enter a valid Java username (3-16 letters, digits or underscores)."
+            exit 1
+          }
+          [[ -n "$FRP_SERVER_ADDR" ]] || {
+            echo "::error::Set repository variable FRP_SERVER_ADDR."
+            exit 1
+          }
+          [[ -n "$FRP_AUTH_TOKEN" ]] || {
+            echo "::error::Set repository secret FRP_AUTH_TOKEN."
+            exit 1
+          }
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends curl jq tar gzip python3 git util-linux ca-certificates
+
+      - name: Install pinned Horizon dedicated server
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL "https://raw.githubusercontent.com/horizon-rust/horizon/${HORIZON_VERSION}/packaging/server/install.sh" \
+            | sh -s -- --version "$HORIZON_VERSION" --dir "$HORIZON_DATA_DIR" --bin "$RUNNER_TEMP/bin"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/bin/horizon-server" version
+
+      - name: Download and verify pinned FRP client
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FRP_DIR"
+          archive="$RUNNER_TEMP/frp_${FRP_VERSION}_linux_amd64.tar.gz"
+          curl -fsSL \
+            "https://github.com/fatedier/frp/releases/download/v${FRP_VERSION}/frp_${FRP_VERSION}_linux_amd64.tar.gz" \
+            -o "$archive"
+          echo "1d9875210972a5d1a62b2dc4c48df45ab0af05d3ca1b5e494a014428259df803  $archive" | sha256sum -c -
+          tar -xzf "$archive" -C "$FRP_DIR" --strip-components=1
+          test -x "$FRP_DIR/frpc"
+          echo "$FRP_DIR" >> "$GITHUB_PATH"
+
+      - name: Fetch private Minecraft 26.3 resources
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: bash scripts/fetch-resources.sh
+
+      - name: Start server, tunnel, checkpoints and timed shutdown
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: bash scripts/run-session.sh
+
+      - name: Upload diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: horizon-session-diagnostics
+          path: |
+            ${{ runner.temp }}/horizon-server/logs/**
+            ${{ runner.temp }}/horizon-data/**
+            ${{ runner.temp }}/frp/frpc.log
+          if-no-files-found: ignore
+          retention-days: 3
