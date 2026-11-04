@@ -35,10 +35,13 @@ cleanup() {
 
   if [[ "$server_started" == "1" ]]; then
     phase_before="$(horizon status --json 2>/dev/null | jq -r '.phase // empty' 2>/dev/null)"
-    if [[ "$phase_before" == "running" || "$phase_before" == "starting" || "$phase_before" == "restarting" ]]; then
+    if [[ "$phase_before" == "running" || "$phase_before" == "starting" || "$phase_before" == "restarting" || "$phase_before" == "stopping" ]]; then
       echo "Starting graceful Horizon shutdown from phase=$phase_before..."
-      horizon cmd say "Server saving and stopping now. Your world progress is being checkpointed." \
-        >> "$SERVER_DIR/logs/session.log" 2>&1
+      if [[ "$phase_before" == "running" ]]; then
+        timeout --signal=TERM --kill-after=5s 10s horizon cmd say \
+          "Server saving and stopping now. Your world progress is being checkpointed." \
+          >> "$SERVER_DIR/logs/session.log" 2>&1 || true
+      fi
       stop_request_ok=0
       if horizon stop >> "$SERVER_DIR/logs/session.log" 2>&1; then stop_request_ok=1; fi
       phase=""
@@ -144,13 +147,13 @@ while true; do
   elapsed=$(( now - job_start ))
 
   if [[ "$elapsed" -ge 300 && "$first_warning_sent" -eq 0 ]]; then
-    horizon cmd say "Scheduled maintenance in 25 minutes. Please finish activities and return to a safe location." || true
+    timeout --signal=TERM --kill-after=5s 10s horizon cmd say "Scheduled maintenance in 25 minutes. Please finish activities and return to a safe location." || true
     notify "Horizon MC: maintenance begins in 25 minutes (5h00 job elapsed)."
     first_warning_sent=1
   fi
 
   if [[ "$elapsed" -ge 315 && "$second_warning_sent" -eq 0 ]]; then
-    horizon cmd say "Scheduled maintenance in 10 minutes. The server will save and stop at 5h25." || true
+    timeout --signal=TERM --kill-after=5s 10s horizon cmd say "Scheduled maintenance in 10 minutes. The server will save and stop at 5h25." || true
     notify "Horizon MC: 10-minute warning. Graceful shutdown starts at 5h25."
     second_warning_sent=1
   fi
