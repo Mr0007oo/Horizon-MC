@@ -1,0 +1,30 @@
+name: Validate Horizon MC bootstrap
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "copilot/**"
+
+permissions:
+  contents: read
+
+jobs:
+  static-and-helper-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Check Python syntax
+        run: python -m compileall -q scripts tests
+      - name: Check Bash syntax
+        run: |
+          bash -n scripts/fetch-resources.sh
+          bash -n scripts/checkpoint.sh
+          bash -n scripts/run-session.sh
+      - name: Run offline helper tests
+        run: python -m unittest discover -s tests -v

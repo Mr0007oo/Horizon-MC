@@ -58,6 +58,10 @@ jobs:
       WORLD_STORE_DIR: ${{ runner.temp }}/world-store
 
     steps:
+      - name: Capture job start time
+        shell: bash
+        run: echo "JOB_STARTED_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
+
       - name: Checkout canonical repository
         uses: actions/checkout@v4
         with:
@@ -65,10 +69,6 @@ jobs:
           ref: main
           fetch-depth: 0
           persist-credentials: true
-
-      - name: Capture job start time
-        shell: bash
-        run: echo "JOB_STARTED_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
 
       - name: Validate inputs and install system tools
         shell: bash
@@ -139,7 +139,6 @@ jobs:
           name: horizon-session-diagnostics
           path: |
             ${{ runner.temp }}/horizon-server/logs/**
-            ${{ runner.temp }}/horizon-data/**
             ${{ runner.temp }}/frp/frpc.log
           if-no-files-found: ignore
           retention-days: 3
