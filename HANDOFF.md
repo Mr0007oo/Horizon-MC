@@ -9,8 +9,8 @@ Phase 1 — Initial runtime bootstrap implemented; CI is passing on the last com
 - Added manual Actions workflow, pinned Horizon and FRP installers, resource archive fetcher and checksum validation.
 - Added Java TCP FRP config generator for 25565 through FRPS control port 7000.
 - Added current/previous world snapshot store on a dedicated world-data branch.
-- Added final shutdown snapshot verification and manual-stop marker.
-- Added Telegram notifier and allowlisted command bot.
+- Added final shutdown snapshot verification, serialization with the checkpoint lock and a manual-stop marker.
+- Added Telegram notifier and allowlisted command bot with stale-update filtering and a manual-backup cutoff near shutdown.
 - Added static validation workflow and offline helper tests.
 - Added Codespaces setup, architecture and upstream dependency pins.
 
@@ -18,7 +18,7 @@ Phase 1 — Initial runtime bootstrap implemented; CI is passing on the last com
 The workflow and scripts are implemented but not live-verified. Do not call the server production-ready.
 
 ## Tests
-Offline tests are present in tests/test_runtime_helpers.py. Validation is run on every PR update. The current branch includes new resource-manifest, fail-closed restore and serialized final-save checks; confirm the latest CI result before merge.
+Offline tests are present in tests/test_runtime_helpers.py. Validation is run on every PR update. The current branch includes new resource-manifest, fail-closed restore, serialized final-save and Telegram replay checks; confirm the latest CI result before merge.
 
 No actual FRP connection, Java client session, or live server backup/restore has been tested yet.
 
