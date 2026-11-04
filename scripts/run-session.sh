@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-ROOT="\${GITHUB_WORKSPACE:?GITHUB_WORKSPACE is missing}"
-SERVER_DIR="\${SERVER_DIR:?SERVER_DIR is missing}"
-WORLD_NAME="\${WORLD_NAME:-survival}"
-WORLD_SEED="\${WORLD_SEED:?WORLD_SEED is missing}"
-WORLD_ID="\${WORLD_ID:?WORLD_ID is missing}"
-WORLD_BRANCH="\${WORLD_BRANCH:?WORLD_BRANCH is missing}"
-JOB_STARTED_EPOCH="\${JOB_STARTED_EPOCH:-$(date +%s)}"
-HORIZON_BIN="\${HORIZON_BIN:-$(command -v horizon-server)}"
+ROOT="${GITHUB_WORKSPACE:?GITHUB_WORKSPACE is missing}"
+SERVER_DIR="${SERVER_DIR:?SERVER_DIR is missing}"
+WORLD_NAME="${WORLD_NAME:-survival}"
+WORLD_SEED="${WORLD_SEED:?WORLD_SEED is missing}"
+WORLD_ID="${WORLD_ID:?WORLD_ID is missing}"
+WORLD_BRANCH="${WORLD_BRANCH:?WORLD_BRANCH is missing}"
+JOB_STARTED_EPOCH="${JOB_STARTED_EPOCH:-$(date +%s)}"
+HORIZON_BIN="${HORIZON_BIN:-$(command -v horizon-server)}"
 export HORIZON_BIN SERVER_DIR WORLD_NAME WORLD_SEED WORLD_ID WORLD_BRANCH
 
 mkdir -p "$SERVER_DIR" "$SERVER_DIR/logs"
@@ -104,7 +104,7 @@ frpc_pid=$!
 sleep 5
 kill -0 "$frpc_pid" || { cat "$FRP_DIR/frpc.log" || true; echo "FRP client exited during startup."; exit 1; }
 
-if [[ -n "\${TELEGRAM_BOT_TOKEN:-}" && -n "\${TELEGRAM_ALLOWED_USER_IDS:-}" ]]; then
+if [[ -n "${TELEGRAM_BOT_TOKEN:-}" && -n "${TELEGRAM_ALLOWED_USER_IDS:-}" ]]; then
   python3 "$ROOT/scripts/telegram-bot.py" >> "$SERVER_DIR/logs/telegram-bot.log" 2>&1 &
   telegram_pid=$!
 else
