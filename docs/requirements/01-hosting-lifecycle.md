@@ -12,7 +12,7 @@ Measure elapsed time from the very first workflow step, before checkout, install
 |---|---|
 | 0m | Capture start epoch and validate inputs |
 | 0–10m (target only) | Checkout, install pinned tools, restore data and start service |
-| 60m, 120m, 180m, 240m | Hourly consistent world checkpoint |
+| 60m, 120m, 180m, 240m | Hourly consistent world checkpoint; no new checkpoint starts after 4h30m |
 | 300m / 5h00m | First player and Telegram warning |
 | 315m / 5h15m | Second player and Telegram warning |
 | 325m / 5h25m | Stop new play and begin graceful shutdown immediately |
