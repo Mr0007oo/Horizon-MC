@@ -93,7 +93,7 @@ If Telegram is unavailable:
 - Record the notification failure in workflow logs without exposing token.
 - Do not shut down the server solely because Telegram is unavailable.
 
-On reconnection, resume safely using the Telegram update offset. Never replay a potentially destructive administrative command as a result of a duplicate update.
+The bot advances the Telegram update offset for every received update and ignores messages whose timestamp predates the current bot process start. This prevents queued commands from an earlier Actions session from being replayed. Never replay a potentially destructive administrative command as a result of a duplicate update.
 
 ## Acceptance tests
 
