@@ -13,6 +13,7 @@ import sys
 import tarfile
 import tempfile
 import unittest
+from unittest.mock import patch
 import zipfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -74,6 +75,50 @@ class RuntimeHelpersTests(unittest.TestCase):
                           str(archive), str(base / "out")], check=False)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("horizon-resources.json", result.stderr + result.stdout)
+
+    def test_snapshot_validator_checks_world_identity_and_level_dat(self):
+        spec = importlib.util.spec_from_file_location(
+            "horizon_world_data", ROOT / "scripts/world-data.py"
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        world_id = "survival-9064150133272194-26.3"
+        seed = "9064150133272194"
+        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {
+            "WORLD_ID": world_id,
+            "WORLD_NAME": "survival",
+            "WORLD_SEED": seed,
+        }):
+            folder = pathlib.Path(tmp)
+            archive_path = folder / "world.zip"
+            manifest_path = folder / "manifest.json"
+            with zipfile.ZipFile(archive_path, "w") as archive:
+                archive.writestr("survival/level.dat", b"level-data")
+            manifest = {
+                "schema_version": 1,
+                "world_id": world_id,
+                "world_name": "survival",
+                "seed": seed,
+                "minecraft_version": "26.3",
+                "archive": "world.zip",
+                "size_bytes": archive_path.stat().st_size,
+                "sha256": module.sha256(archive_path),
+            }
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            self.assertIsNotNone(module.validate(folder))
+
+            manifest["seed"] = "12345"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            self.assertIsNone(module.validate(folder))
+
+            manifest["seed"] = seed
+            with zipfile.ZipFile(archive_path, "w") as archive:
+                archive.writestr("other-world/level.dat", b"wrong-world")
+            manifest["size_bytes"] = archive_path.stat().st_size
+            manifest["sha256"] = module.sha256(archive_path)
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            self.assertIsNone(module.validate(folder))
 
     def test_invalid_saved_snapshot_refuses_to_create_a_new_world(self):
         with tempfile.TemporaryDirectory() as tmp:
