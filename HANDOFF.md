@@ -18,12 +18,12 @@ Phase 1 — Initial runtime bootstrap implemented; latest push and pull-request 
 The workflow and scripts are implemented but not live-verified. Do not call the server production-ready.
 
 ## Tests
-Offline tests are present in tests/test_runtime_helpers.py. Validation is run on every PR update. The latest validated commit is `1ac38fe833886d3318ad4c4c36e735a5ee87dee2`. Push validation [41775433347](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775433347) and PR validation [41775439286](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775439286) both passed Python compileall, Bash syntax checks and all ten offline tests.
+Offline tests are present in tests/test_runtime_helpers.py. Validation is run on every PR update. Latest validated implementation commit: `34fa293088e93b048a1e3dd024d1f9e8710978dd`. Push validation [41775625706](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775625706) and PR validation [41775630663](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775630663) both passed Python compileall, Bash syntax checks and all ten offline tests.
 
 No actual FRP connection, Java client session, or live server backup/restore has been tested yet.
 
 ## Latest checkpoint
-- Commit: `1ac38fe833886d3318ad4c4c36e735a5ee87dee2`
+- Latest validated implementation commit: `34fa293088e93b048a1e3dd024d1f9e8710978dd`
 - PR #1: https://github.com/Mr0007oo/Horizon-MC/pull/1
 - Base branch: `main`
 - PR remains open and unmerged.
