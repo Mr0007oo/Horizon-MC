@@ -1,7 +1,7 @@
 # Horizon MC — Current Handoff
 
 ## Current phase
-Phase 1 — Runtime bootstrap and documentation follow-up merged into canonical `main` by PRs #1 and #2. Lifecycle fix is locally tested and committed as `bd455ada2dbf6035da2f3812a0b718fd6a369025`; Telegram-only no-operator startup is committed locally as `91f6931` on `copilot/telegram-only-startup`. Push to canonical failed because Git could not obtain a write credential; no PR exists.
+Phase 1 — Runtime bootstrap and documentation follow-up merged into canonical `main` by PRs #1 and #2. Lifecycle fix is locally tested and committed as `bd455ada2dbf6035da2f3812a0b718fd6a369025`; Telegram-only no-operator startup is committed locally as `91f6931` on `copilot/telegram-only-startup`. Push to both fork and canonical failed because Git could not obtain a write credential; PR creation failed because the head branch is not remote.
 
 ## Completed in this branch
 - Updated lifecycle requirement to first warning at 5h00m, second warning at 5h15m, graceful shutdown at 5h25m and job hard timeout at 5h50m.
@@ -32,7 +32,7 @@ No actual FRP connection, Java client session, or live server backup/restore has
 
 ## Latest checkpoint
 - Current canonical base: `a1c84bb418d55f26e52cf72b7f28b466adb2ad30`
-- Local checkpoint: `91f6931` on `copilot/telegram-only-startup`, based on canonical main plus local lifecycle fix. Push to canonical `upstream` failed because Git could not obtain a write credential; no remote feature branch or PR was created.
+- Local checkpoint: `91f6931` on `copilot/telegram-only-startup`, based on canonical main plus local lifecycle fix. Push to both `origin` (fork) and canonical `upstream` failed because Git could not obtain a write credential; the PR attempt was rejected because no remote head branch exists.
 - Original implementation PR #1: https://github.com/Mr0007oo/Horizon-MC/pull/1 (merged)
 - Documentation follow-up PR #2: https://github.com/Mr0007oo/Horizon-MC/pull/2 (merged)
 - Latest validated implementation commit: `34fa293088e93b048a1e3dd024d1f9e8710978dd`.
@@ -65,4 +65,4 @@ No actual FRP connection, Java client session, or live server backup/restore has
 `copilot/telegram-only-startup` (local checkpoint based on canonical `main` plus lifecycle fix; canonical push could not authenticate; no PR)
 
 ## Exact next task
-Obtain authorized Git write access to canonical `Mr0007oo/Horizon-MC`, push `copilot/telegram-only-startup`, open a PR against `main`, and address CI results. Then verify the private resource release and FRP/Telegram Actions settings, dispatch the workflow, and test a Java 26.3 connection and persistence. Gameplay work must wait until a Horizon/Mixins/SMP revision set is mutually compatible and the documented native-mod APIs are verified.
+Obtain authorized Git write access to the fork, push `copilot/telegram-only-startup`, open a PR into canonical `Mr0007oo/Horizon-MC:main`, and address CI results. Then verify the private resource release and FRP/Telegram Actions settings, dispatch the workflow, and test a Java 26.3 connection and persistence. Gameplay work must wait until a Horizon/Mixins/SMP revision set is mutually compatible and the documented native-mod APIs are verified.
