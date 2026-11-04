@@ -45,14 +45,14 @@ def send(chat_id: int, message: str) -> None:
     }, timeout=15)
 
 
-def horizon(*args: str) -> str:
+def horizon(*args: str, timeout: int = 90) -> str:
     result = subprocess.run(
         [HORIZON, "--dir", SERVER_DIR, *args],
         cwd=ROOT,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        timeout=90,
+        timeout=timeout,
         check=False,
     )
     if result.returncode:
@@ -81,7 +81,7 @@ def handle(chat_id: int, text: str) -> str:
     if command == "/logs":
         return horizon("logs", "-n", "60")
     if command == "/restart":
-        return horizon("restart")
+        return horizon("restart", timeout=330)
     if command == "/say":
         message = remainder.strip()
         if not message or any(ord(ch) < 32 for ch in message):
@@ -94,13 +94,22 @@ def handle(chat_id: int, text: str) -> str:
         # Argument vector only: never invoke bash, sh, PowerShell, eval or shell=True.
         return horizon("cmd", *words)
     if command == "/backup":
+        try:
+            job_started = int(os.environ["JOB_STARTED_EPOCH"])
+        except (KeyError, ValueError):
+            return "Manual backup unavailable: session start time is not known."
+        remaining = 325 * 60 - int(time.time() - job_started)
+        if remaining < 30 * 60:
+            return "Manual backup not started: scheduled shutdown is within 30 minutes; the final checkpoint will run during shutdown."
+        # Limit the manual checkpoint to 15 minutes so it cannot crowd the scheduled shutdown.
         result = subprocess.run(
-            ["bash", str(ROOT / "scripts/checkpoint.sh")],
+            ["timeout", "--signal=TERM", "--kill-after=30s", "900s",
+             "bash", str(ROOT / "scripts/checkpoint.sh")],
             cwd=ROOT,
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            timeout=1800,
+            timeout=960,
             check=False,
         )
         if result.returncode:
