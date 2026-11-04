@@ -42,7 +42,7 @@ Send administrative notifications to Telegram if its token and alert chat ID are
 ## Startup and world restore
 
 1. Validate that the EULA input was explicitly accepted.
-2. Validate world seed and operator username.
+2. Validate the world seed and, when provided, the operator username. If no operator is requested, require the Telegram bot token and numeric user allowlist before startup.
 3. Install the pinned Horizon release and FRP binary.
 4. Fetch owner-prepared Minecraft 26.3 resources from the private repository release and verify SHA-256.
 5. Initialize the dedicated server only when server.toml is absent.

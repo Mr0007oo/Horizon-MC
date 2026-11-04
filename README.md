@@ -33,7 +33,7 @@ Detailed requirements live in docs/requirements/.
 
 ## Required one-time setup
 
-Prepare your own Minecraft 26.3 resources and upload them to the private GitHub release described in [SETUP-CODESPACES.md](docs/SETUP-CODESPACES.md). Configure FRP and Telegram Actions secrets/variables. The workflow intentionally stops with a clear validation error until these are present.
+Prepare your own Minecraft 26.3 resources and upload them to the private GitHub release described in [SETUP-CODESPACES.md](docs/SETUP-CODESPACES.md). Configure FRP and Telegram Actions secrets/variables. The workflow intentionally stops with a clear validation error until these are present. Telegram-only startup keeps the player whitelist empty and grants no player operator privileges.
 
 ## Upstream projects
 

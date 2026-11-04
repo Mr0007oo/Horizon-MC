@@ -96,15 +96,7 @@ trap 'exit 143' TERM
 
 if [[ ! -f "$SERVER_DIR/server.toml" ]]; then
   echo "Initializing a new Horizon world with seed $WORLD_SEED."
-  horizon init \
-    --eula \
-    --world "$WORLD_NAME" \
-    --seed "$WORLD_SEED" \
-    --port 25565 \
-    --whitelist \
-    --player "$OPERATOR_USERNAME" \
-    --op "$OPERATOR_USERNAME" \
-    --yes
+  bash "$ROOT/scripts/initialize-server.sh"
 fi
 
 python3 "$ROOT/scripts/world-data.py" init
