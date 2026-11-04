@@ -34,7 +34,8 @@ class RuntimeHelpersTests(unittest.TestCase):
             base = pathlib.Path(tmp)
             archive = base / "resources.tar.gz"
             with tarfile.open(archive, "w:gz") as tar:
-                for name, data in (("26.3/registries.json", b"{}"),
+                for name, data in (("26.3/horizon-resources.json", b"{}"),
+                                   ("26.3/registries.json", b"{}"),
                                    ("26.3/commands.json", b"{}")):
                     source = base / pathlib.Path(name).name
                     source.write_bytes(data)
@@ -42,6 +43,7 @@ class RuntimeHelpersTests(unittest.TestCase):
             destination = base / "out"
             run([sys.executable, str(ROOT / "scripts/prepare-resources.py"),
                  str(archive), str(destination)])
+            self.assertTrue((destination / "26.3/horizon-resources.json").is_file())
             self.assertTrue((destination / "26.3/registries.json").is_file())
             self.assertTrue((destination / "26.3/commands.json").is_file())
 
@@ -57,6 +59,20 @@ class RuntimeHelpersTests(unittest.TestCase):
                           str(archive), str(base / "out")], check=False)
             self.assertNotEqual(result.returncode, 0)
             self.assertFalse((base / "escape").exists())
+
+    def test_resource_archive_requires_horizon_manifest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = pathlib.Path(tmp)
+            archive = base / "missing-manifest.tar.gz"
+            with tarfile.open(archive, "w:gz") as tar:
+                for name in ("registries.json", "commands.json"):
+                    source = base / name
+                    source.write_text("{}")
+                    tar.add(source, arcname=f"26.3/{name}")
+            result = run([sys.executable, str(ROOT / "scripts/prepare-resources.py"),
+                          str(archive), str(base / "out")], check=False)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("horizon-resources.json", result.stderr + result.stdout)
 
     def test_frp_config_does_not_embed_token(self):
         with tempfile.TemporaryDirectory() as tmp:
