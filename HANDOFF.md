@@ -1,7 +1,7 @@
 # Horizon MC — Current Handoff
 
 ## Current phase
-Phase 1 — Initial runtime bootstrap created; waiting for PR validation and owner setup.
+Phase 1 — Initial runtime bootstrap implemented; PR validation configured and awaiting the latest CI run plus owner setup.
 
 ## Completed in this branch
 - Updated lifecycle requirement to first warning at 5h00m, second warning at 5h15m, graceful shutdown at 5h25m and job hard timeout at 5h50m.
@@ -18,7 +18,7 @@ Phase 1 — Initial runtime bootstrap created; waiting for PR validation and own
 The workflow and scripts are implemented but not live-verified. Do not call the server production-ready.
 
 ## Tests
-Offline tests are present in tests/test_runtime_helpers.py. The validate workflow is configured to run Python compileall, Bash syntax checks and unittest discovery. Review the PR's GitHub Actions result before merge.
+Offline tests are present in tests/test_runtime_helpers.py. The latest validation on the prior checkpoint passed Python compileall, Bash syntax checks and all five offline tests. A follow-up run is in progress for the latest late-checkpoint safety patch.
 
 No actual FRP connection, Java client session, or live server backup/restore has been tested yet.
 
@@ -53,4 +53,4 @@ Review CI results, complete docs/SETUP-CODESPACES.md, then run the initial workf
 copilot/initial-runtime-bootstrap
 
 ## Pull request
-Will be added after creation and verification.
+https://github.com/Mr0007oo/Horizon-MC/pull/1
