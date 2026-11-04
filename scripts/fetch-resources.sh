@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-: "\${GH_TOKEN:?GitHub token missing}"
-: "\${GITHUB_REPOSITORY:?GITHUB_REPOSITORY is missing}"
-: "\${HORIZON_RESOURCES_RELEASE_TAG:=resources-26.3}"
-: "\${HORIZON_RESOURCES_ASSET:=horizon-resources-26.3.tar.gz}"
-: "\${HORIZON_DATA_DIR:?HORIZON_DATA_DIR is missing}"
+: "${GH_TOKEN:?GitHub token missing}"
+: "${GITHUB_REPOSITORY:?GITHUB_REPOSITORY is missing}"
+: "${HORIZON_RESOURCES_RELEASE_TAG:=resources-26.3}"
+: "${HORIZON_RESOURCES_ASSET:=horizon-resources-26.3.tar.gz}"
+: "${HORIZON_DATA_DIR:?HORIZON_DATA_DIR is missing}"
 
-api="https://api.github.com/repos/\${GITHUB_REPOSITORY}/releases/tags/\${HORIZON_RESOURCES_RELEASE_TAG}"
+api="https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/tags/${HORIZON_RESOURCES_RELEASE_TAG}"
 headers=(
-  -H "Authorization: Bearer \${GH_TOKEN}"
+  -H "Authorization: Bearer ${GH_TOKEN}"
   -H "Accept: application/vnd.github+json"
   -H "X-GitHub-Api-Version: 2022-11-28"
 )
-release="$(curl -fsSL "\${headers[@]}" "$api")"
+release="$(curl -fsSL "${headers[@]}" "$api")"
 
 asset_id="$(jq -r --arg name "$HORIZON_RESOURCES_ASSET" '.assets[] | select(.name == $name) | .id' <<<"$release" | head -n1)"
-checksum_name="\${HORIZON_RESOURCES_ASSET}.sha256"
+checksum_name="${HORIZON_RESOURCES_ASSET}.sha256"
 checksum_id="$(jq -r --arg name "$checksum_name" '.assets[] | select(.name == $name) | .id' <<<"$release" | head -n1)"
 
 [[ "$asset_id" =~ ^[0-9]+$ ]] || {
@@ -40,7 +40,7 @@ download_private_asset() {
   # returns 302 with a short-lived signed release-assets URL. The token is never forwarded
   # to that different host.
   status="$(curl -sS -D "$response_headers" -o "$destination" -w '%{http_code}' \
-    "\${headers[@]}" -H "Accept: application/octet-stream" "$asset_url")"
+    "${headers[@]}" -H "Accept: application/octet-stream" "$asset_url")"
 
   case "$status" in
     200)
@@ -69,8 +69,8 @@ download_private_asset() {
   rm -f "$response_headers"
 }
 
-asset_url="https://api.github.com/repos/\${GITHUB_REPOSITORY}/releases/assets/\${asset_id}"
-checksum_url="https://api.github.com/repos/\${GITHUB_REPOSITORY}/releases/assets/\${checksum_id}"
+asset_url="https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/assets/${asset_id}"
+checksum_url="https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/assets/${checksum_id}"
 
 download_private_asset "$asset_url" "$RUNNER_TEMP/horizon-resources/$HORIZON_RESOURCES_ASSET"
 download_private_asset "$checksum_url" "$RUNNER_TEMP/horizon-resources/$checksum_name"
