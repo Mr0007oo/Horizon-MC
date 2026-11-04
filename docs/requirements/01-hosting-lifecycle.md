@@ -21,15 +21,15 @@ Default project timeline:
 | 340–352m | Stop Horizon, create final backup, verify and push |
 | Before 355m | Finish workflow with timeout margin |
 
-The proposed workflow job timeout is 355 minutes, subject to verification against the current applicable GitHub runner/job limits. Do not assume this value is universally available. If a platform limit, queue delay or bootstrap duration makes the schedule unsafe, adjust the plan and document the decision. Never intentionally approach a hard timeout without a shutdown margin.
+The proposed workflow job timeout is 350 minutes, subject to verification against the current applicable GitHub runner/job limits. Do not assume this value is universally available. If a platform limit, queue delay or bootstrap duration makes the schedule unsafe, adjust the plan and document the decision. Never intentionally approach a hard timeout without a shutdown margin.
 
 ## Player messages
 
-At 320 minutes:
+At 300 minutes:
 
-Server notice: Scheduled maintenance is approaching. The server will restart in approximately 20 minutes. Your world progress is checkpointed automatically.
+Server notice: Scheduled maintenance is approaching. The server will restart in approximately 25 minutes. Your world progress is checkpointed automatically.
 
-At 330 minutes:
+At 315 minutes:
 
 Server notice: 10 minutes until scheduled maintenance. Please finish your activities and return to a safe location.
 
@@ -61,7 +61,7 @@ Horizon documents horizon-server backup and horizon-server backups; verify exact
 
 Create scripts/shutdown.sh.
 
-At 340 minutes:
+At 325 minutes:
 1. Notify players and Telegram.
 2. Stop accepting new administrative operations.
 3. Ask the documented Horizon supervisor to stop gracefully.
@@ -113,8 +113,8 @@ Monitor status, TPS, MSPT, player count, RAM, CPU, disk, FRP tunnel, backup outc
 
 ## Acceptance tests
 
-- Simulated clock verifies 320m and 330m notifications.
-- Simulated clock verifies graceful stop at 340m.
+- Simulated clock verifies 300m and 315m notifications.
+- Simulated clock verifies graceful stop at 325m.
 - Successful final snapshot verifies remotely.
 - Failed backup and failed push prevent continuation.
 - Manual stop prevents continuation.
