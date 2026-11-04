@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import pathlib
 import sys
 import tarfile
@@ -30,8 +31,8 @@ def main() -> int:
                 raise SystemExit(
                     "Archive must contain one top-level directory named 26.3/."
                 )
-            if member.issym() or member.islnk() or member.isdev():
-                raise SystemExit(f"Links/devices are not allowed: {member.name}")
+            if not (member.isdir() or member.isfile()):
+                raise SystemExit(f"Only regular files and directories are allowed: {member.name}")
             target = (destination / pathlib.Path(*relative.parts)).resolve()
             if destination not in target.parents and target != destination:
                 raise SystemExit(f"Path escapes destination: {member.name}")
@@ -39,12 +40,16 @@ def main() -> int:
         bundle.extractall(destination, members=members)
 
     resource_dir = destination / "26.3"
-    required = ("registries.json", "commands.json")
+    required = ("horizon-resources.json", "registries.json", "commands.json")
     missing = [name for name in required if not (resource_dir / name).is_file()]
     if missing:
         raise SystemExit(
             "Prepared resources are missing required files: " + ", ".join(missing)
         )
+    try:
+        json.loads((resource_dir / "horizon-resources.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise SystemExit(f"horizon-resources.json is not valid JSON: {exc}") from exc
 
     print(f"Prepared Minecraft 26.3 resources installed at {resource_dir}")
     return 0
