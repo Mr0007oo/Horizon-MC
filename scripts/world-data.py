@@ -64,16 +64,33 @@ def validate(folder: pathlib.Path) -> dict | None:
         return None
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        world_name = env("WORLD_NAME", "survival")
+        if manifest.get("schema_version") != 1:
+            return None
         if manifest.get("world_id") != env("WORLD_ID"):
+            return None
+        if manifest.get("world_name") != world_name:
+            return None
+        if manifest.get("seed") != env("WORLD_SEED"):
+            return None
+        if manifest.get("minecraft_version") != "26.3":
             return None
         if manifest.get("archive") != "world.zip":
             return None
-        if archive_path.stat().st_size != manifest.get("size_bytes"):
+        size = archive_path.stat().st_size
+        if size <= 0 or size != manifest.get("size_bytes"):
             return None
-        if sha256(archive_path) != manifest.get("sha256"):
+        expected_hash = manifest.get("sha256")
+        if not isinstance(expected_hash, str) or len(expected_hash) != 64:
+            return None
+        if any(character not in "0123456789abcdef" for character in expected_hash.lower()):
+            return None
+        if sha256(archive_path) != expected_hash:
             return None
         with zipfile.ZipFile(archive_path) as archive:
             if archive.testzip() is not None:
+                return None
+            if f"{world_name}/level.dat" not in archive.namelist():
                 return None
         return manifest
     except (OSError, ValueError, zipfile.BadZipFile, TypeError):
@@ -213,6 +230,11 @@ def snapshot(clean_shutdown: bool) -> None:
         bad = archive.testzip()
         if bad is not None:
             raise RuntimeError(f"Backup archive CRC validation failed at {bad}.")
+        expected_world_file = f"{env('WORLD_NAME', 'survival')}/level.dat"
+        if expected_world_file not in archive.namelist():
+            raise RuntimeError(
+                f"Backup archive does not contain the expected world file {expected_world_file}."
+            )
 
     current, previous = store / "current", store / "previous"
     old = validate(current) or validate(previous)
