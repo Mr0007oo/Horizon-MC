@@ -77,7 +77,7 @@ def handle(chat_id: int, text: str) -> str:
     if command == "/status":
         return horizon("status", "--json")
     if command == "/players":
-        return horizon("players", "--json")
+        return horizon("cmd", "list")
     if command == "/logs":
         return horizon("logs", "-n", "60")
     if command == "/restart":
