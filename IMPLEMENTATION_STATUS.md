@@ -1,6 +1,6 @@
 # Horizon MC — Implementation Status
 
-**State:** Initial runtime bootstrap implemented; latest CI run pending after final timer hardening; first live smoke test remains.  
+**State:** Initial runtime bootstrap implemented; CI validation is being rerun after resource-manifest and fail-closed restore changes; first live smoke test remains.  
 **Canonical repository:** https://github.com/Mr0007oo/Horizon-MC  
 **Default branch:** main  
 **Current implementation branch:** copilot/initial-runtime-bootstrap
@@ -23,7 +23,7 @@
 | Lifecycle warnings | IMPLEMENTED_PENDING_TEST | 300m and 315m; shutdown starts at 325m |
 | Telegram notifier | IMPLEMENTED_NOT_LIVE_TESTED | Uses existing token secret and alert chat ID |
 | Telegram control bot | IMPLEMENTED_PENDING_TEST | Numeric user/chat allowlists and no shell execution |
-| Static/portable tests | PASSING_ON_PRIOR_CHECKPOINT | Previous PR run passed compileall, Bash syntax and all five tests; latest post-hardening run is pending |
+| Static/portable tests | PASSING_ON_PRIOR_CHECKPOINT | Previous PR run passed compileall, Bash syntax and all offline tests; latest resource/restore regression run must be checked |
 | FRP public endpoint | PENDING_LIVE_TEST | Requires FRP_SERVER_ADDR and FRP_AUTH_TOKEN |
 | Bedrock UDP | NOT_IMPLEMENTED | Later Velocity/Geyser/Floodgate task |
 | Java 26.2 client | BLOCKED_PENDING_RESEARCH | Protocol translation not established |
@@ -64,7 +64,7 @@ Do not drift back to 5h40m shutdown or use the full six-hour window.
 
 ## Verification log
 
-The bootstrap contains offline tests for resource extraction, archive path safety, FRP secret separation, world snapshot branch rotation and timer thresholds. PR validation run 41773567179 passed compileall, Bash syntax and all five offline tests before the final 5h25 late-checkpoint guard. A fresh run is pending for the latest commit.
+The bootstrap contains offline tests for complete Horizon resource extraction, archive path safety, FRP secret separation, invalid-snapshot fail-closed behavior, server-list restore, world snapshot branch rotation and timer thresholds. PR validation run 41773567179 passed compileall, Bash syntax and all five offline tests before the final 5h25 late-checkpoint guard. A fresh run is pending for the latest commit.
 
 No end-to-end test has yet proved:
 - the prepared private resource archive is accepted by the pinned binary;
