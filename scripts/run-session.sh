@@ -43,7 +43,11 @@ cleanup() {
           >> "$SERVER_DIR/logs/session.log" 2>&1 || true
       fi
       stop_request_ok=0
-      if horizon stop >> "$SERVER_DIR/logs/session.log" 2>&1; then stop_request_ok=1; fi
+      if [[ "$phase_before" == "stopping" ]]; then
+        stop_request_ok=1
+      elif horizon stop >> "$SERVER_DIR/logs/session.log" 2>&1; then
+        stop_request_ok=1
+      fi
       phase=""
       for attempt in $(seq 1 30); do
         phase="$(horizon status --json 2>/dev/null | jq -r '.phase // empty' 2>/dev/null || true)"
