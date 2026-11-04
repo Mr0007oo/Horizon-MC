@@ -131,7 +131,7 @@ else
   echo "Telegram control disabled: configure token and numeric TELEGRAM_ALLOWED_USER_IDS."
 fi
 
-notify "Horizon MC is online. Java endpoint uses your FRP host on port 25565. Seed: $WORLD_SEED. Warnings at 5h00 and 5h15; graceful shutdown starts at 5h25."
+notify "Horizon MC is running and the FRPC client process is active. Test the public Java endpoint at ${FRP_SERVER_ADDR}:25565 from a client; external reachability has not been verified by this runner. Seed: $WORLD_SEED. Warnings at 5h00 and 5h15; shutdown starts at 5h25."
 
 job_start="$JOB_STARTED_EPOCH"
 next_backup=$(( job_start + 3600 ))
