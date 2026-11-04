@@ -1,18 +1,22 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-: "${GH_TOKEN:?GitHub token missing}"
-: "${GITHUB_REPOSITORY:?GITHUB_REPOSITORY is missing}"
-: "${HORIZON_RESOURCES_RELEASE_TAG:=resources-26.3}"
-: "${HORIZON_RESOURCES_ASSET:=horizon-resources-26.3.tar.gz}"
-: "${HORIZON_DATA_DIR:?HORIZON_DATA_DIR is missing}"
+: "\${GH_TOKEN:?GitHub token missing}"
+: "\${GITHUB_REPOSITORY:?GITHUB_REPOSITORY is missing}"
+: "\${HORIZON_RESOURCES_RELEASE_TAG:=resources-26.3}"
+: "\${HORIZON_RESOURCES_ASSET:=horizon-resources-26.3.tar.gz}"
+: "\${HORIZON_DATA_DIR:?HORIZON_DATA_DIR is missing}"
 
-api="https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/tags/${HORIZON_RESOURCES_RELEASE_TAG}"
-headers=(-H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28")
-release="$(curl -fsSL "${headers[@]}" "$api")"
+api="https://api.github.com/repos/\${GITHUB_REPOSITORY}/releases/tags/\${HORIZON_RESOURCES_RELEASE_TAG}"
+headers=(
+  -H "Authorization: Bearer \${GH_TOKEN}"
+  -H "Accept: application/vnd.github+json"
+  -H "X-GitHub-Api-Version: 2022-11-28"
+)
+release="$(curl -fsSL "\${headers[@]}" "$api")"
 
 asset_id="$(jq -r --arg name "$HORIZON_RESOURCES_ASSET" '.assets[] | select(.name == $name) | .id' <<<"$release" | head -n1)"
-checksum_name="${HORIZON_RESOURCES_ASSET}.sha256"
+checksum_name="\${HORIZON_RESOURCES_ASSET}.sha256"
 checksum_id="$(jq -r --arg name "$checksum_name" '.assets[] | select(.name == $name) | .id' <<<"$release" | head -n1)"
 
 [[ "$asset_id" =~ ^[0-9]+$ ]] || {
@@ -25,13 +29,51 @@ checksum_id="$(jq -r --arg name "$checksum_name" '.assets[] | select(.name == $n
 }
 
 mkdir -p "$RUNNER_TEMP/horizon-resources"
-asset_url="https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/assets/${asset_id}"
-checksum_url="https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/assets/${checksum_id}"
 
-curl -fsSL -L "${headers[@]}" -H "Accept: application/octet-stream" "$asset_url" \
-  -o "$RUNNER_TEMP/horizon-resources/$HORIZON_RESOURCES_ASSET"
-curl -fsSL -L "${headers[@]}" -H "Accept: application/octet-stream" "$checksum_url" \
-  -o "$RUNNER_TEMP/horizon-resources/$checksum_name"
+download_private_asset() {
+  local asset_url="$1"
+  local destination="$2"
+  local response_headers="$destination.headers"
+  local status location
+
+  # Fetch the authenticated API response without following its redirect. GitHub normally
+  # returns 302 with a short-lived signed release-assets URL. The token is never forwarded
+  # to that different host.
+  status="$(curl -sS -D "$response_headers" -o "$destination" -w '%{http_code}' \
+    "\${headers[@]}" -H "Accept: application/octet-stream" "$asset_url")"
+
+  case "$status" in
+    200)
+      ;;
+    301|302|303|307|308)
+      location="$(awk 'tolower($1) == "location:" {
+        sub(/^[^:]*:[[:space:]]*/, "");
+        sub(/\r$/, "");
+        value=$0
+      } END { print value }' "$response_headers")"
+      [[ "$location" == https://* ]] || {
+        rm -f "$response_headers" "$destination"
+        echo "::error::GitHub returned an invalid release asset redirect."
+        return 1
+      }
+      rm -f "$destination"
+      # Do not attach GH_TOKEN to the signed storage URL.
+      curl -fsSL "$location" -o "$destination"
+      ;;
+    *)
+      rm -f "$response_headers" "$destination"
+      echo "::error::Unexpected GitHub release asset response: HTTP $status."
+      return 1
+      ;;
+  esac
+  rm -f "$response_headers"
+}
+
+asset_url="https://api.github.com/repos/\${GITHUB_REPOSITORY}/releases/assets/\${asset_id}"
+checksum_url="https://api.github.com/repos/\${GITHUB_REPOSITORY}/releases/assets/\${checksum_id}"
+
+download_private_asset "$asset_url" "$RUNNER_TEMP/horizon-resources/$HORIZON_RESOURCES_ASSET"
+download_private_asset "$checksum_url" "$RUNNER_TEMP/horizon-resources/$checksum_name"
 
 cd "$RUNNER_TEMP/horizon-resources"
 sha256sum --check "$checksum_name"
