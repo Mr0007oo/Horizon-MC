@@ -106,9 +106,9 @@ class RuntimeHelpersTests(unittest.TestCase):
 
     def test_resource_downloader_uses_expanded_shell_variables(self):
         script = (ROOT / "scripts/fetch-resources.sh").read_text(encoding="utf-8")
-        self.assertNotRegex(script, r"\\\\\\$\\{[A-Z_]+")
+        self.assertNotIn(r"\${", script)
         self.assertIn('${GITHUB_REPOSITORY}', script)
-        self.assertIn('"\${headers[@]}"', script)
+        self.assertIn("headers[@]", script)
 
     def test_frp_config_does_not_embed_token(self):
         with tempfile.TemporaryDirectory() as tmp:
