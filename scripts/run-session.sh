@@ -11,6 +11,11 @@ JOB_STARTED_EPOCH="${JOB_STARTED_EPOCH:-$(date +%s)}"
 HORIZON_BIN="${HORIZON_BIN:-$(command -v horizon-server)}"
 export HORIZON_BIN SERVER_DIR WORLD_NAME WORLD_SEED WORLD_ID WORLD_BRANCH JOB_STARTED_EPOCH
 
+FIRST_WARNING_SECONDS=$((5 * 60 * 60))
+SECOND_WARNING_SECONDS=$((5 * 60 * 60 + 15 * 60))
+SHUTDOWN_SECONDS=$((5 * 60 * 60 + 25 * 60))
+LAST_CHECKPOINT_START_SECONDS=$((4 * 60 * 60 + 30 * 60))
+
 mkdir -p "$SERVER_DIR" "$SERVER_DIR/logs"
 server_started=0
 frpc_pid=""
@@ -150,13 +155,13 @@ while true; do
   now="$(date +%s)"
   elapsed=$(( now - job_start ))
 
-  if [[ "$elapsed" -ge 300 && "$first_warning_sent" -eq 0 ]]; then
+  if [[ "$elapsed" -ge "$FIRST_WARNING_SECONDS" && "$first_warning_sent" -eq 0 ]]; then
     timeout --signal=TERM --kill-after=5s 10s horizon cmd say "Scheduled maintenance in 25 minutes. Please finish activities and return to a safe location." || true
     notify "Horizon MC: maintenance begins in 25 minutes (5h00 job elapsed)."
     first_warning_sent=1
   fi
 
-  if [[ "$elapsed" -ge 315 && "$second_warning_sent" -eq 0 ]]; then
+  if [[ "$elapsed" -ge "$SECOND_WARNING_SECONDS" && "$second_warning_sent" -eq 0 ]]; then
     timeout --signal=TERM --kill-after=5s 10s horizon cmd say "Scheduled maintenance in 10 minutes. The server will save and stop at 5h25." || true
     notify "Horizon MC: 10-minute warning. Graceful shutdown starts at 5h25."
     second_warning_sent=1
@@ -167,7 +172,7 @@ while true; do
     break
   fi
 
-  if [[ "$elapsed" -ge 325 ]]; then
+  if [[ "$elapsed" -ge "$SHUTDOWN_SECONDS" ]]; then
     echo "The 5h25 session limit has been reached; starting graceful shutdown."
     break
   fi
@@ -194,7 +199,7 @@ while true; do
     exit 1
   fi
 
-  if [[ "$elapsed" -lt 270 && "$now" -ge "$next_backup" ]]; then
+  if [[ "$elapsed" -lt "$LAST_CHECKPOINT_START_SECONDS" && "$now" -ge "$next_backup" ]]; then
     echo "Creating hourly checkpoint..."
     timeout --signal=TERM --kill-after=30s 1500s bash "$ROOT/scripts/checkpoint.sh"
     next_backup=$(( next_backup + 3600 ))

@@ -6,8 +6,8 @@ Use https://github.com/horizon-rust/horizon and its documented dedicated server.
 ## DEC-002 — Native Rust extensions
 Use Horizon native mods and Horizon Mixins. Java plugin JARs are not a compatible extension mechanism.
 
-## DEC-003 — Reuse official SMP features
-Inspect and pin the official horizon-rust/horizon-mods native SMP module. Reuse only what is compatible with the pinned engine and test it.
+## DEC-003 — Reuse official SMP features only with a matching engine
+The inspected SMP source at `horizon-rust/horizon-mods` commit `ee1620f438c853b03ff2c568f4c4b1b443211294` declares Horizon `48c63bc09d9acc82f2074e75ae59720514796a9d` and Horizon Mixins `d9c83d7096b7ea5b83678da2efdfd6161f74997e`. This does not match the project's pinned Horizon `a3acb5f0d2f59d2d5ff21a5aa000809ba1e35e2f`; do not reuse/build this SMP revision until a compatible, tested revision set is selected.
 
 ## DEC-004 — Java 26.3 as initial server target
 The inspected Horizon server docs describe Java Edition 26.3. Java 26.2 client compatibility is a separate unverified requirement and must not be inferred from save migration.

@@ -1,7 +1,7 @@
 # Horizon MC — Current Handoff
 
 ## Current phase
-Phase 1 — Runtime bootstrap merged into `main` by PR #1; CI validation passed; owner setup and live smoke test remain.
+Phase 1 — Runtime bootstrap and documentation follow-up merged into canonical `main` by PRs #1 and #2. A lifecycle timing fix is locally tested; owner setup and live smoke test remain.
 
 ## Completed in this branch
 - Updated lifecycle requirement to first warning at 5h00m, second warning at 5h15m, graceful shutdown at 5h25m and job hard timeout at 5h50m.
@@ -13,19 +13,26 @@ Phase 1 — Runtime bootstrap merged into `main` by PR #1; CI validation passed;
 - Added Telegram notifier and allowlisted command bot with stale-update filtering and a manual-backup cutoff near shutdown.
 - Added static validation workflow and offline helper tests.
 - Added Codespaces setup, architecture and upstream dependency pins.
+- Corrected lifecycle comparisons to use seconds (the unit produced by `date +%s`): 5h00 warning, 5h15 warning, 5h25 shutdown, and no new hourly checkpoint after 4h30.
 
 ## Working features
 The workflow and scripts are implemented but not live-verified. Do not call the server production-ready.
 
 ## Tests
-Offline tests are present in tests/test_runtime_helpers.py. Validation is run on every PR update. Latest validated implementation commit: `34fa293088e93b048a1e3dd024d1f9e8710978dd`. Push validation [41775625706](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775625706) and PR validation [41775630663](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775630663) both passed Python compileall, Bash syntax checks and all ten offline tests.
+Offline tests are present in tests/test_runtime_helpers.py. Validation runs on every PR update. The latest previously CI-validated implementation commit is `34fa293088e93b048a1e3dd024d1f9e8710978dd`; push validation [41775625706](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775625706) and PR validation [41775630663](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775630663) passed Python compileall, Bash syntax checks and all ten offline tests.
+
+On the current local lifecycle fix, all ten offline tests and `bash -n scripts/run-session.sh` pass. CI has not run on this change. The fix addresses a real seconds/minutes mismatch that would otherwise have triggered maintenance after about five minutes and prevented hourly checkpoints.
+
+The official SMP source was inspected at `ee1620f438c853b03ff2c568f4c4b1b443211294`; its compatibility metadata requires Horizon `48c63bc09d9acc82f2074e75ae59720514796a9d` and Mixins `d9c83d7096b7ea5b83678da2efdfd6161f74997e`. The pinned runtime Horizon revision differs, so SMP reuse and those gameplay features remain blocked until a matching revision set is selected and tested.
+
+The Codespace reports nonempty FRP and Telegram inputs. Local FRP config generation passed with file-based token auth and mode-0600 token storage. GitHub API checks could not verify Actions secrets (403) or access the private `resources-26.3` release (401); its presence is unverified, and no live workflow was dispatched.
 
 No actual FRP connection, Java client session, or live server backup/restore has been tested yet.
 
 ## Latest checkpoint
-- Runtime merge commit: `764f3256e9f4c756e150b96b91cec93c18bf0280`
+- Current canonical base: `a1c84bb418d55f26e52cf72b7f28b466adb2ad30`
 - Original implementation PR #1: https://github.com/Mr0007oo/Horizon-MC/pull/1 (merged)
-- Documentation follow-up PR #2: https://github.com/Mr0007oo/Horizon-MC/pull/2 (open)
+- Documentation follow-up PR #2: https://github.com/Mr0007oo/Horizon-MC/pull/2 (merged)
 - Latest validated implementation commit: `34fa293088e93b048a1e3dd024d1f9e8710978dd`.
 
 ## Pinned revisions
@@ -50,14 +57,11 @@ No actual FRP connection, Java client session, or live server backup/restore has
 1. Prepare and upload the private Minecraft 26.3 resource release and SHA-256 sidecar.
 2. Configure `FRP_SERVER_ADDR` and `FRP_AUTH_TOKEN`.
 3. Configure Telegram numeric allowlists and alert chat ID if bot control is wanted.
-4. PR #1 is already merged. PR #2 contains documentation-only status/handoff refresh.
+4. PRs #1 and #2 are merged.
 5. Perform a controlled first Java 26.3 connection and world persistence test.
 
+## Current working branch
+`copilot/fix-lifecycle-seconds` (based on canonical `main`; PR pending)
+
 ## Exact next task
-Complete the private resource release and Actions variables/secrets using `docs/SETUP-CODESPACES.md`. Then run a controlled Java 26.3 session with no important player data, verify the public FRP endpoint from a real client, and test the next-run restore.
-
-## Handoff branch
-docs/post-merge-bootstrap-handoff
-
-## Documentation follow-up PR
-https://github.com/Mr0007oo/Horizon-MC/pull/2
+Push this tested feature branch and open a PR against canonical `main`; address its CI results. The next runtime gate requires the owner to upload the private `resources-26.3` release and configure FRP Actions variables/secrets; then perform the controlled Java 26.3 connection and persistence test. Gameplay work must wait until a Horizon/Mixins/SMP revision set is mutually compatible and the documented native-mod APIs are verified.

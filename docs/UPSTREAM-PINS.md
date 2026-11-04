@@ -9,6 +9,7 @@ These versions were inspected for the initial bootstrap. Runtime updates require
 | Minecraft Java Edition | 26.3 | Horizon hosting guide for this release |
 | FRP | v0.71.1 | https://github.com/fatedier/frp/releases/tag/v0.71.1 |
 | FRP Linux AMD64 archive SHA-256 | 1d9875210972a5d1a62b2dc4c48df45ab0af05d3ca1b5e494a014428259df803 | GitHub release asset digest, verified by workflow |
+| Official Horizon SMP source inspected | ee1620f438c853b03ff2c568f4c4b1b443211294 | `horizon-rust/horizon-mods/native/smp` main; compatibility metadata requires Horizon `48c63bc09d9acc82f2074e75ae59720514796a9d` and Horizon Mixins `d9c83d7096b7ea5b83678da2efdfd6161f74997e` |
 
 ## Horizon
 
@@ -39,3 +40,7 @@ The FRPS deployment owner must still confirm that their installed frps accepts v
 ## Updates
 
 Never update Horizon or FRP by silently switching to latest. Update the version, checksum, generated config, setup documentation and integration tests together.
+
+## Native SMP compatibility status
+
+The inspected official SMP source revision does not match this project's pinned Horizon commit `a3acb5f0d2f59d2d5ff21a5aa000809ba1e35e2f`: its `compatibility.json` names Horizon commit `48c63bc09d9acc82f2074e75ae59720514796a9d` and Horizon Mixins commit `d9c83d7096b7ea5b83678da2efdfd6161f74997e`. Do not build or reuse this SMP revision with the current runtime pin. Resolve and test a matching Horizon/Mixins/SMP revision set before enabling SMP features or adding custom native mods.

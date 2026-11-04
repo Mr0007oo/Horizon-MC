@@ -261,11 +261,14 @@ elif args[2] == "backup":
 
     def test_session_deadline_is_325_minutes(self):
         script = (ROOT / "scripts/run-session.sh").read_text(encoding="utf-8")
-        self.assertIn('"$elapsed" -ge 300', script)
-        self.assertIn('"$elapsed" -ge 315', script)
-        self.assertIn('"$elapsed" -ge 325', script)
-        self.assertNotIn('"$elapsed" -ge 340', script)
-        self.assertIn('"$elapsed" -lt 270', script)
+        self.assertIn("FIRST_WARNING_SECONDS=$((5 * 60 * 60))", script)
+        self.assertIn("SECOND_WARNING_SECONDS=$((5 * 60 * 60 + 15 * 60))", script)
+        self.assertIn("SHUTDOWN_SECONDS=$((5 * 60 * 60 + 25 * 60))", script)
+        self.assertIn("LAST_CHECKPOINT_START_SECONDS=$((4 * 60 * 60 + 30 * 60))", script)
+        self.assertIn('"$elapsed" -ge "$FIRST_WARNING_SECONDS"', script)
+        self.assertIn('"$elapsed" -ge "$SECOND_WARNING_SECONDS"', script)
+        self.assertIn('"$elapsed" -ge "$SHUTDOWN_SECONDS"', script)
+        self.assertIn('"$elapsed" -lt "$LAST_CHECKPOINT_START_SECONDS"', script)
         self.assertIn('timeout --signal=TERM --kill-after=30s 1500s', script)
         self.assertIn("sleep 5", script)
 

@@ -1,10 +1,11 @@
 # Horizon MC — Implementation Status
 
-**State:** Initial runtime bootstrap merged into `main` by PR #1; CI validation passed; owner setup and live smoke test remain.
-**Latest validated implementation commit:** `34fa293088e93b048a1e3dd024d1f9e8710978dd`  
+**State:** Runtime bootstrap and documentation follow-up merged into canonical `main` by PRs #1 and #2. A lifecycle timing correction is locally tested on `copilot/fix-lifecycle-seconds`; owner setup and live smoke test remain.
+**Latest merged canonical commit:** `a1c84bb418d55f26e52cf72b7f28b466adb2ad30`
+**Latest previously CI-validated implementation commit:** `34fa293088e93b048a1e3dd024d1f9e8710978dd`
 **Canonical repository:** https://github.com/Mr0007oo/Horizon-MC  
 **Default branch:** main  
-**Current implementation branch:** main (bootstrap merged by PR #1)
+**Current implementation branch:** `copilot/fix-lifecycle-seconds` (PR pending)
 
 ## Implemented in the current PR
 
@@ -21,15 +22,15 @@
 | Snapshot restore | CI_VALIDATED | Current then previous fallback; invalid snapshots fail closed; server lists/settings restored |
 | Final shutdown save | IMPLEMENTED_PENDING_LIVE_TEST | Graceful stop at 325m, then CLI final backup and remote verification |
 | Workflow timeout | IMPLEMENTED | 350 minutes (5h50m) |
-| Lifecycle warnings | CI_VALIDATED | 300m and 315m; shutdown starts at 325m; 5-second polling |
+| Lifecycle timing | TESTING | Elapsed time is measured in seconds; warnings at 300m/315m, shutdown at 325m, checkpoint cutoff at 270m; local tests pass, CI and live workflow validation pending |
 | Telegram notifier | IMPLEMENTED_NOT_LIVE_TESTED | Uses existing token secret and alert chat ID |
 | Telegram control bot | CI_VALIDATED | Numeric allowlists, no shell execution, stale-update filtering, manual-backup cutoff |
-| Static/portable tests | PASS | Python compileall, Bash syntax and all ten offline tests pass on latest validated commit |
+| Static/portable tests | PASS | Python compileall, Bash syntax and all ten offline tests pass locally; CI on this branch is pending |
 | FRP public endpoint | PENDING_LIVE_TEST | Requires FRP_SERVER_ADDR and FRP_AUTH_TOKEN |
 | Bedrock UDP | NOT_IMPLEMENTED | Later Velocity/Geyser/Floodgate task |
 | Java 26.2 client | BLOCKED_PENDING_RESEARCH | Protocol translation not established |
 | Offline/cracked authentication | BLOCKED | Offline mode alone does not authenticate identities |
-| Homes / TPA / claims | RESEARCHING | Verify official SMP compatibility and build integration |
+| Official SMP homes / TPA / claims | BLOCKED | Inspected SMP commit `ee1620f`; its compatibility metadata requires Horizon `48c63bc` and Mixins `d9c83d7`, which do not match the pinned Horizon `a3ac5bf` |
 | Personal waypoints | NOT_STARTED | Custom native mod needed |
 | Vein Miner | NOT_STARTED | Custom native mod needed |
 | Self-service /ec | NOT_STARTED | Custom native mod needed; distinct from /endersee |
@@ -66,13 +67,21 @@ Do not drift back to 5h40m shutdown or use the full six-hour window.
 
 ## Verification log
 
-Latest validated implementation commit: `34fa293088e93b048a1e3dd024d1f9e8710978dd`.
+Previously validated implementation commit: `34fa293088e93b048a1e3dd024d1f9e8710978dd`.
 
 - Push validation [run 41775625706](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775625706): success.
 - Pull request validation [run 41775630663](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775630663): success.
 - Python compileall: passed.
 - Bash syntax checks: passed.
 - Offline helper suite: all ten tests passed.
+
+Current local lifecycle correction:
+- `python3 -m unittest discover -s tests -p test_runtime_helpers.py -v`: all ten tests passed.
+- `bash -n scripts/run-session.sh`: passed.
+- CI has not yet run on the lifecycle correction; no live Actions session has verified it.
+- Official SMP compatibility metadata was read at source commit `ee1620f438c853b03ff2c568f4c4b1b443211294`; its declared Horizon/Mixins pins do not match this runtime, so reuse is blocked.
+- The Codespace has nonempty FRP and Telegram inputs. Local FRP config generation passed; the token is stored in a mode-0600 file and the TOML uses file-based token auth. Values were not printed.
+- The current GitHub integration cannot verify Actions secret names (403), and the Codespace token cannot access the private resource release (401). Resource release presence is therefore unverified; no live workflow was dispatched.
 
 Coverage includes prepared resource archive extraction and traversal rejection, required Horizon resource manifest, downloader variable expansion, FRP token separation, stale Telegram update filtering, snapshot identity/seed/level.dat validation, fail-closed restore, server settings/operator/whitelist restoration, snapshot rotation/remote verification and lifecycle timing.
 
@@ -89,13 +98,14 @@ No end-to-end test has yet proved:
 1. Add the private release tag resources-26.3 with the prepared resources archive and its .sha256 asset.
 2. Set FRP_SERVER_ADDR variable and FRP_AUTH_TOKEN secret.
 3. Keep TELEGRAM_BOT_TOKEN secret and add numeric Telegram allowlists/alert chat ID if using bot control.
-4. PR #1 is already merged; after completing the resource and Actions setup, launch the workflow manually for one controlled first session.
+4. PRs #1 and #2 are merged; after completing the resource and Actions setup, launch the workflow manually for one controlled first session.
 
 See [Codespaces setup](docs/SETUP-CODESPACES.md).
 
 ## Next implementation tasks
 
-1. Complete the private resource release and Actions variables/secrets.
-2. Run a controlled first session and verify the endpoint from a real Java 26.3 client.
-3. Test shutdown save, second-run restore and operator/whitelist persistence.
-4. Then implement compatible official SMP native modules and the requested missing features.
+1. Run CI for the local lifecycle correction, then merge it through a PR.
+2. Complete the private resource release and required Actions variables/secrets.
+3. Run a controlled first session and verify the endpoint from a real Java 26.3 client.
+4. Test shutdown save, second-run restore and operator/whitelist persistence.
+5. Resolve a Horizon/Mixins/SMP revision set whose compatibility metadata matches, then build and test official SMP before implementing remaining gameplay features.
