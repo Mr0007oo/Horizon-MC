@@ -1,7 +1,7 @@
 # Horizon MC — Current Handoff
 
 ## Current phase
-Phase 1 — Runtime bootstrap merged into `main` by PR #1; CI validation passed; owner setup and live smoke test remain.
+Phase 1 — Runtime bootstrap and documentation follow-up merged into canonical `main` by PRs #1 and #2. Lifecycle fix is locally tested and committed as `bd455ada2dbf6035da2f3812a0b718fd6a369025`; Telegram-only no-operator startup is committed locally as `91f6931` on `copilot/telegram-only-startup`. Push to both fork and canonical failed because Git could not obtain a write credential; PR creation failed because the head branch is not remote.
 
 ## Completed in this branch
 - Updated lifecycle requirement to first warning at 5h00m, second warning at 5h15m, graceful shutdown at 5h25m and job hard timeout at 5h50m.
@@ -13,19 +13,28 @@ Phase 1 — Runtime bootstrap merged into `main` by PR #1; CI validation passed;
 - Added Telegram notifier and allowlisted command bot with stale-update filtering and a manual-backup cutoff near shutdown.
 - Added static validation workflow and offline helper tests.
 - Added Codespaces setup, architecture and upstream dependency pins.
+- Corrected lifecycle comparisons to use seconds (the unit produced by `date +%s`): 5h00 warning, 5h15 warning, 5h25 shutdown, and no new hourly checkpoint after 4h30.
+- Added an optional no-operator startup path: keeps the whitelist enabled and empty, grants no player operator privileges, and requires Telegram token plus numeric user allowlist.
 
 ## Working features
 The workflow and scripts are implemented but not live-verified. Do not call the server production-ready.
 
 ## Tests
-Offline tests are present in tests/test_runtime_helpers.py. Validation is run on every PR update. Latest validated implementation commit: `34fa293088e93b048a1e3dd024d1f9e8710978dd`. Push validation [41775625706](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775625706) and PR validation [41775630663](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775630663) both passed Python compileall, Bash syntax checks and all ten offline tests.
+Offline tests are present in tests/test_runtime_helpers.py. Validation runs on every PR update. The latest previously CI-validated implementation commit is `34fa293088e93b048a1e3dd024d1f9e8710978dd`; push validation [41775625706](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775625706) and PR validation [41775630663](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775630663) passed Python compileall, Bash syntax checks and all ten offline tests.
+
+On the local lifecycle and no-operator changes, all eleven offline tests pass; `bash -n scripts/run-session.sh scripts/initialize-server.sh`, `python3 -m compileall -q scripts tests`, and `git diff --check` pass. CI has not run on these changes.
+
+The official SMP source was inspected at `ee1620f438c853b03ff2c568f4c4b1b443211294`; its compatibility metadata requires Horizon `48c63bc09d9acc82f2074e75ae59720514796a9d` and Mixins `d9c83d7096b7ea5b83678da2efdfd6161f74997e`. The pinned runtime Horizon revision differs, so SMP reuse and those gameplay features remain blocked until a matching revision set is selected and tested.
+
+The owner reports the resource release and FRP settings are configured; their availability has not been verified through GitHub. `gh auth status` reports no authenticated account. Canonical Git fetch works, but Git access alone cannot dispatch the Actions workflow, and no live workflow was dispatched.
 
 No actual FRP connection, Java client session, or live server backup/restore has been tested yet.
 
 ## Latest checkpoint
-- Runtime merge commit: `764f3256e9f4c756e150b96b91cec93c18bf0280`
+- Current canonical base: `a1c84bb418d55f26e52cf72b7f28b466adb2ad30`
+- Local checkpoint: `91f6931` on `copilot/telegram-only-startup`, based on canonical main plus local lifecycle fix. Push to both `origin` (fork) and canonical `upstream` failed because Git could not obtain a write credential; the PR attempt was rejected because no remote head branch exists.
 - Original implementation PR #1: https://github.com/Mr0007oo/Horizon-MC/pull/1 (merged)
-- Documentation follow-up PR #2: https://github.com/Mr0007oo/Horizon-MC/pull/2 (open)
+- Documentation follow-up PR #2: https://github.com/Mr0007oo/Horizon-MC/pull/2 (merged)
 - Latest validated implementation commit: `34fa293088e93b048a1e3dd024d1f9e8710978dd`.
 
 ## Pinned revisions
@@ -47,17 +56,13 @@ No actual FRP connection, Java client session, or live server backup/restore has
 - No automatic continuation
 
 ## Owner setup blockers
-1. Prepare and upload the private Minecraft 26.3 resource release and SHA-256 sidecar.
-2. Configure `FRP_SERVER_ADDR` and `FRP_AUTH_TOKEN`.
-3. Configure Telegram numeric allowlists and alert chat ID if bot control is wanted.
-4. PR #1 is already merged. PR #2 contains documentation-only status/handoff refresh.
-5. Perform a controlled first Java 26.3 connection and world persistence test.
+1. Obtain authorized Git write access and publish/merge `copilot/telegram-only-startup`.
+2. Verify the private resource release, FRP settings, and Telegram token/numeric user allowlist in canonical Actions settings; the owner reports resource and FRP setup is complete, but access is unverified.
+3. Authenticate GitHub CLI in the Codespace or launch from the Actions UI after merge.
+4. Perform a controlled first Java 26.3 connection and world persistence test.
+
+## Current working branch
+`copilot/telegram-only-startup` (local checkpoint based on canonical `main` plus lifecycle fix; canonical push could not authenticate; no PR)
 
 ## Exact next task
-Complete the private resource release and Actions variables/secrets using `docs/SETUP-CODESPACES.md`. Then run a controlled Java 26.3 session with no important player data, verify the public FRP endpoint from a real client, and test the next-run restore.
-
-## Handoff branch
-docs/post-merge-bootstrap-handoff
-
-## Documentation follow-up PR
-https://github.com/Mr0007oo/Horizon-MC/pull/2
+Obtain authorized Git write access to the fork, push `copilot/telegram-only-startup`, open a PR into canonical `Mr0007oo/Horizon-MC:main`, and address CI results. Then verify the private resource release and FRP/Telegram Actions settings, dispatch the workflow, and test a Java 26.3 connection and persistence. Gameplay work must wait until a Horizon/Mixins/SMP revision set is mutually compatible and the documented native-mod APIs are verified.

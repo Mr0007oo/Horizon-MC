@@ -89,7 +89,8 @@ The current workflow sends the FRP Java TCP tunnel directly to Horizon. Horizon 
 In **Actions → Horizon Minecraft Server → Run workflow**:
 
 - Accept the EULA only after you have read and agreed to the Minecraft EULA.
-- Enter the Java account username that should receive operator privileges on first initialization.
+- Leave the operator username blank for Telegram-only administration. On first initialization, the whitelist remains enabled and empty, and no player is granted operator privileges. Add players with an authorized Telegram `/console whitelist add <JavaUsername>` command.
+- To grant a player operator privileges instead, enter that player's valid Java username.
 - Leave the seed as 9064150133272194, unless you deliberately intend to start a different world.
 
 The world identity is initially:
@@ -105,7 +106,7 @@ Join using:
 
     <your-FRP-hostname>:25565
 
-The first run will fail clearly if the resource release, FRP address/token, EULA input or operator username is missing.
+The first run will fail clearly if the resource release, FRP address/token or EULA acceptance is missing. For Telegram-only administration, `TELEGRAM_BOT_TOKEN` and numeric `TELEGRAM_ALLOWED_USER_IDS` are also required; a blank operator username without those settings is rejected.
 
 ## 7. Session timing
 

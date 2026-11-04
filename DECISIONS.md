@@ -6,8 +6,8 @@ Use https://github.com/horizon-rust/horizon and its documented dedicated server.
 ## DEC-002 — Native Rust extensions
 Use Horizon native mods and Horizon Mixins. Java plugin JARs are not a compatible extension mechanism.
 
-## DEC-003 — Reuse official SMP features
-Inspect and pin the official horizon-rust/horizon-mods native SMP module. Reuse only what is compatible with the pinned engine and test it.
+## DEC-003 — Reuse official SMP features only with a matching engine
+The inspected SMP source at `horizon-rust/horizon-mods` commit `ee1620f438c853b03ff2c568f4c4b1b443211294` declares Horizon `48c63bc09d9acc82f2074e75ae59720514796a9d` and Horizon Mixins `d9c83d7096b7ea5b83678da2efdfd6161f74997e`. This does not match the project's pinned Horizon `a3acb5f0d2f59d2d5ff21a5aa000809ba1e35e2f`; do not reuse/build this SMP revision until a compatible, tested revision set is selected.
 
 ## DEC-004 — Java 26.3 as initial server target
 The inspected Horizon server docs describe Java Edition 26.3. Java 26.2 client compatibility is a separate unverified requirement and must not be inferred from save migration.
@@ -35,6 +35,9 @@ Use numeric Telegram ID allowlists. Telegram messages are never OS shell command
 
 ## DEC-012 — Handoff PR workflow
 Create a feature branch based on the latest canonical main, push it to Mr0007oo/Horizon-MC and open a PR into main. Do not push directly to main. When gh CLI authentication fails, test the workspace's existing Git credential transport; stop if remote Git is also unauthorized.
+
+## DEC-013 — Telegram-only first startup
+The first operator account is optional. When omitted, initialize with whitelist enabled and no player/operator entries; require the Telegram bot token and numeric user allowlist so an authorized Telegram administrator can add players through the Horizon console. Existing operator records in a restored world are preserved.
 
 ## Pending decisions
 - Exact Horizon Mixins and SMP revisions for future native mods.

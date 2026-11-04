@@ -31,6 +31,41 @@ def run(args, *, cwd=None, env=None, check=True):
 
 
 class RuntimeHelpersTests(unittest.TestCase):
+    def test_server_initialization_can_disable_operator_grant(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = pathlib.Path(tmp)
+            fake_horizon = base / "horizon-server"
+            args_file = base / "args.json"
+            fake_horizon.write_text(
+                "#!/usr/bin/env python3\n"
+                "import json, os, sys\n"
+                "with open(os.environ['ARGS_FILE'], 'w') as stream:\n"
+                "    json.dump(sys.argv[1:], stream)\n",
+                encoding="utf-8",
+            )
+            fake_horizon.chmod(0o755)
+            env = os.environ.copy()
+            env.update({
+                "HORIZON_BIN": str(fake_horizon),
+                "SERVER_DIR": str(base / "server"),
+                "WORLD_NAME": "survival",
+                "WORLD_SEED": "9064150133272194",
+                "ARGS_FILE": str(args_file),
+                "OPERATOR_USERNAME": "",
+            })
+
+            run(["bash", str(ROOT / "scripts/initialize-server.sh")], env=env)
+            args = json.loads(args_file.read_text(encoding="utf-8"))
+            self.assertIn("--whitelist", args)
+            self.assertNotIn("--player", args)
+            self.assertNotIn("--op", args)
+
+            env["OPERATOR_USERNAME"] = "ExamplePlayer"
+            run(["bash", str(ROOT / "scripts/initialize-server.sh")], env=env)
+            args = json.loads(args_file.read_text(encoding="utf-8"))
+            self.assertEqual(args[args.index("--player") + 1], "ExamplePlayer")
+            self.assertEqual(args[args.index("--op") + 1], "ExamplePlayer")
+
     def test_resource_archive_validates_and_extracts(self):
         with tempfile.TemporaryDirectory() as tmp:
             base = pathlib.Path(tmp)
@@ -261,11 +296,14 @@ elif args[2] == "backup":
 
     def test_session_deadline_is_325_minutes(self):
         script = (ROOT / "scripts/run-session.sh").read_text(encoding="utf-8")
-        self.assertIn('"$elapsed" -ge 300', script)
-        self.assertIn('"$elapsed" -ge 315', script)
-        self.assertIn('"$elapsed" -ge 325', script)
-        self.assertNotIn('"$elapsed" -ge 340', script)
-        self.assertIn('"$elapsed" -lt 270', script)
+        self.assertIn("FIRST_WARNING_SECONDS=$((5 * 60 * 60))", script)
+        self.assertIn("SECOND_WARNING_SECONDS=$((5 * 60 * 60 + 15 * 60))", script)
+        self.assertIn("SHUTDOWN_SECONDS=$((5 * 60 * 60 + 25 * 60))", script)
+        self.assertIn("LAST_CHECKPOINT_START_SECONDS=$((4 * 60 * 60 + 30 * 60))", script)
+        self.assertIn('"$elapsed" -ge "$FIRST_WARNING_SECONDS"', script)
+        self.assertIn('"$elapsed" -ge "$SECOND_WARNING_SECONDS"', script)
+        self.assertIn('"$elapsed" -ge "$SHUTDOWN_SECONDS"', script)
+        self.assertIn('"$elapsed" -lt "$LAST_CHECKPOINT_START_SECONDS"', script)
         self.assertIn('timeout --signal=TERM --kill-after=30s 1500s', script)
         self.assertIn("sleep 5", script)
 

@@ -9,9 +9,10 @@ on:
         type: boolean
         default: false
       operator_username:
-        description: "Your Java Minecraft account username (used to grant OP on first setup)"
-        required: true
+        description: "Optional Java username to whitelist and grant operator on first setup; leave blank for Telegram-only administration"
+        required: false
         type: string
+        default: ""
       world_seed:
         description: "World seed (default is the seed you supplied)"
         required: true
@@ -82,10 +83,21 @@ jobs:
             echo "::error::World seed must be a numeric Minecraft seed."
             exit 1
           }
-          [[ "$OPERATOR_USERNAME" =~ ^[A-Za-z0-9_]{3,16}$ ]] || {
-            echo "::error::Enter a valid Java username (3-16 letters, digits or underscores)."
-            exit 1
-          }
+          if [[ -n "$OPERATOR_USERNAME" ]]; then
+            [[ "$OPERATOR_USERNAME" =~ ^[A-Za-z0-9_]{3,16}$ ]] || {
+              echo "::error::Enter a valid Java username (3-16 letters, digits or underscores)."
+              exit 1
+            }
+          else
+            [[ -n "$TELEGRAM_BOT_TOKEN" ]] || {
+              echo "::error::Telegram-only administration requires the TELEGRAM_BOT_TOKEN secret."
+              exit 1
+            }
+            [[ "$TELEGRAM_ALLOWED_USER_IDS" =~ ^[0-9]+(,[0-9]+)*$ ]] || {
+              echo "::error::Telegram-only administration requires numeric TELEGRAM_ALLOWED_USER_IDS."
+              exit 1
+            }
+          fi
           [[ -n "$FRP_SERVER_ADDR" ]] || {
             echo "::error::Set repository variable FRP_SERVER_ADDR."
             exit 1
