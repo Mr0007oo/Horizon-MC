@@ -1,7 +1,7 @@
 # Horizon MC — Implementation Status
 
 **State:** Initial runtime bootstrap implemented; latest push and pull-request validation passed; owner setup and live smoke test remain.
-**Latest validated commit:** `1ac38fe833886d3318ad4c4c36e735a5ee87dee2`  
+**Latest validated implementation commit:** `34fa293088e93b048a1e3dd024d1f9e8710978dd`  
 **Canonical repository:** https://github.com/Mr0007oo/Horizon-MC  
 **Default branch:** main  
 **Current implementation branch:** copilot/initial-runtime-bootstrap
@@ -59,16 +59,17 @@
 - 5h15m: second warning.
 - 5h25m: graceful shutdown begins.
 - 5h50m: hard workflow timeout.
+- Hourly checkpoints at 1h, 2h, 3h and 4h elapsed; no new one starts after 4h30m.
 - Automatic continuation: disabled.
 
 Do not drift back to 5h40m shutdown or use the full six-hour window.
 
 ## Verification log
 
-Latest validated commit: `1ac38fe833886d3318ad4c4c36e735a5ee87dee2`.
+Latest validated implementation commit: `34fa293088e93b048a1e3dd024d1f9e8710978dd`.
 
-- Push validation [run 41775433347](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775433347): success.
-- Pull request validation [run 41775439286](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775439286): success.
+- Push validation [run 41775625706](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775625706): success.
+- Pull request validation [run 41775630663](https://github.com/Mr0007oo/Horizon-MC/actions/runs/41775630663): success.
 - Python compileall: passed.
 - Bash syntax checks: passed.
 - Offline helper suite: all ten tests passed.
@@ -88,14 +89,13 @@ No end-to-end test has yet proved:
 1. Add the private release tag resources-26.3 with the prepared resources archive and its .sha256 asset.
 2. Set FRP_SERVER_ADDR variable and FRP_AUTH_TOKEN secret.
 3. Keep TELEGRAM_BOT_TOKEN secret and add numeric Telegram allowlists/alert chat ID if using bot control.
-4. Merge PR after the latest validation run succeeds, then execute one controlled first session.
+4. Review and merge PR #1 when ready, then execute one controlled first session.
 
 See [Codespaces setup](docs/SETUP-CODESPACES.md).
 
 ## Next implementation tasks
 
-1. Review CI and fix any failures before merge.
-2. Validate prepared resource upload and first server boot.
-3. Test FRP tunnel from a real Minecraft Java 26.3 client.
-4. Test world backup, second-run restore and final save.
-5. Then implement compatible official SMP native modules and requested missing features.
+1. Complete the private resource release and Actions variables/secrets.
+2. Run a controlled first session and verify the endpoint from a real Java 26.3 client.
+3. Test shutdown save, second-run restore and operator/whitelist persistence.
+4. Then implement compatible official SMP native modules and the requested missing features.
