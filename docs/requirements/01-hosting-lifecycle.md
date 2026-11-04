@@ -12,7 +12,7 @@ Measure elapsed time from the very first workflow step, before checkout, install
 |---|---|
 | 0m | Capture start epoch and validate inputs |
 | 0–10m (target only) | Checkout, install pinned tools, restore data and start service |
-| 60m, 120m, 180m, 240m, 300m | Hourly consistent world checkpoint |
+| 60m, 120m, 180m, 240m | Hourly consistent world checkpoint |
 | 300m / 5h00m | First player and Telegram warning |
 | 315m / 5h15m | Second player and Telegram warning |
 | 325m / 5h25m | Stop new play and begin graceful shutdown immediately |
@@ -21,7 +21,7 @@ Measure elapsed time from the very first workflow step, before checkout, install
 
 **Never wait until 5h40m. Never target the full six-hour window.** The workflow job timeout is set to 350 minutes. Graceful shutdown must begin at elapsed 325 minutes, regardless of when Horizon finished booting.
 
-The controller checks the elapsed time at short intervals (currently 20 seconds). The stop can therefore begin slightly after the 325-minute check boundary, but it must not be scheduled later than 325 minutes intentionally. The job timeout remains a final failsafe, not the normal shutdown path.
+The controller checks the elapsed time every five seconds. The stop can therefore begin slightly after the 325-minute check boundary, but it must not be scheduled later than 325 minutes intentionally. The job timeout remains a final failsafe, not the normal shutdown path.
 
 ## Player messages
 
