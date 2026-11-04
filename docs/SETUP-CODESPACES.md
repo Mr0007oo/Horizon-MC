@@ -2,11 +2,11 @@
 
 This repository now contains an initial GitHub Actions runtime bootstrap. The workflow is manual and the server has not yet been started against your FRP host.
 
-## 1. Merge the bootstrap PR first
+## 1. Open the merged runtime workflow
 
-The workflow uses workflow_dispatch. GitHub exposes manual dispatch for workflows on the repository's default branch, so review and merge the bootstrap pull request into main before trying to run it.
+The bootstrap workflow was merged into `main` by PR #1. It uses `workflow_dispatch`, so you can open it from the repository's default branch after completing the one-time resource and Actions configuration below.
 
-After merge, open:
+Open:
 
 **GitHub repository → Actions → Horizon Minecraft Server → Run workflow**
 
