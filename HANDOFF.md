@@ -1,51 +1,56 @@
 # Horizon MC — Current Handoff
 
 ## Current phase
-Phase 0 — Feasibility research.
+Phase 1 — Initial runtime bootstrap created; waiting for PR validation and owner setup.
 
-## Completed
-- Master PRD created.
-- Copilot repository instructions created.
-- Requirement documents created.
-- Initial architecture decisions recorded.
-- Initial feature support research recorded.
+## Completed in this branch
+- Updated lifecycle requirement to first warning at 5h00m, second warning at 5h15m, graceful shutdown at 5h25m and job hard timeout at 5h50m.
+- Recorded the owner-supplied seed 9064150133272194 and initial world identity.
+- Added manual Actions workflow, pinned Horizon and FRP installers, resource archive fetcher and checksum validation.
+- Added Java TCP FRP config generator for 25565 through FRPS control port 7000.
+- Added current/previous world snapshot store on a dedicated world-data branch.
+- Added final shutdown snapshot verification and manual-stop marker.
+- Added Telegram notifier and allowlisted command bot.
+- Added static validation workflow and offline helper tests.
+- Added Codespaces setup, architecture and upstream dependency pins.
 
 ## Working features
-No runtime features have been implemented or verified yet.
+The workflow and scripts are implemented but not live-verified. Do not call the server production-ready.
 
-## Tests passing
-No runtime tests have been executed by repository initialization.
+## Tests
+Offline tests are present in tests/test_runtime_helpers.py. The validate workflow is configured to run Python compileall, Bash syntax checks and unittest discovery. Review the PR's GitHub Actions result before merge.
 
-## Tests failing
-None run.
+No actual FRP connection, Java client session, or live server backup/restore has been tested yet.
 
-## Files changed
-See the initial documentation commit and repository tree.
+## Pinned revisions
+- Horizon v0.2.97 — a3acb5f0d2f59d2d5ff21a5aa000809ba1e35e2f
+- FRP v0.71.1 — Linux AMD64 SHA-256 recorded in docs/UPSTREAM-PINS.md
 
-## Current upstream revisions
-Not pinned yet. Do not build against moving main branches without recording exact SHAs.
+## World details
+- World: survival
+- Seed: 9064150133272194
+- Version: 26.3
+- Branch: world-data/survival-9064150133272194-26.3
 
-## Remaining tasks
-1. Verify exact Horizon server release and artifact checksum.
-2. Verify prepared resource workflow.
-3. Inspect Horizon server config and control API.
-4. Verify official SMP native compatibility.
-5. Verify FRP port mappings.
-6. Verify Velocity/Geyser/Floodgate versions.
-7. Investigate Java 26.2 translation and offline authentication.
-8. Design snapshot storage and test representative archive size.
+## Timing
+- Warning: 5h00m
+- Warning: 5h15m
+- Graceful shutdown: 5h25m
+- Hard workflow timeout: 5h50m
+- No automatic continuation
 
-## Known blockers
-See IMPLEMENTATION_STATUS.md.
+## Owner setup blockers
+1. Upload the private prepared Minecraft 26.3 resource release and checksum.
+2. Configure FRP_SERVER_ADDR and FRP_AUTH_TOKEN.
+3. Configure Telegram numeric allowlists and alert chat ID if bot control is wanted.
+4. Merge PR and inspect validation workflow.
+5. Perform a controlled first Java 26.3 connection and world persistence test.
 
 ## Exact next task
-Complete Phase 0 research, write docs/ARCHITECTURE.md and update dependency pins.
-
-## Last successful checkpoint
-Repository documentation initialization. See git log for the commit SHA.
+Review CI results, complete docs/SETUP-CODESPACES.md, then run the initial workflow with no important player data until save/restore is confirmed.
 
 ## Handoff branch
-None.
+copilot/initial-runtime-bootstrap
 
 ## Pull request
-None.
+Will be added after creation and verification.
