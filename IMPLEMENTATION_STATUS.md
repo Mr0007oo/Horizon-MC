@@ -1,10 +1,10 @@
 # Horizon MC — Implementation Status
 
-**State:** Initial runtime bootstrap implemented; latest push and pull-request validation passed; owner setup and live smoke test remain.
+**State:** Initial runtime bootstrap merged into `main` by PR #1; CI validation passed; owner setup and live smoke test remain.
 **Latest validated implementation commit:** `34fa293088e93b048a1e3dd024d1f9e8710978dd`  
 **Canonical repository:** https://github.com/Mr0007oo/Horizon-MC  
 **Default branch:** main  
-**Current implementation branch:** copilot/initial-runtime-bootstrap
+**Current implementation branch:** main (bootstrap merged by PR #1)
 
 ## Implemented in the current PR
 
