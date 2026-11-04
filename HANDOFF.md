@@ -1,7 +1,7 @@
 # Horizon MC — Current Handoff
 
 ## Current phase
-Phase 1 — Initial runtime bootstrap implemented; PR validation configured and awaiting the latest CI run plus owner setup.
+Phase 1 — Initial runtime bootstrap implemented; CI is passing on the last completed validation run; owner setup and live smoke test remain.
 
 ## Completed in this branch
 - Updated lifecycle requirement to first warning at 5h00m, second warning at 5h15m, graceful shutdown at 5h25m and job hard timeout at 5h50m.
@@ -18,7 +18,7 @@ Phase 1 — Initial runtime bootstrap implemented; PR validation configured and 
 The workflow and scripts are implemented but not live-verified. Do not call the server production-ready.
 
 ## Tests
-Offline tests are present in tests/test_runtime_helpers.py. The latest validation on the prior checkpoint passed Python compileall, Bash syntax checks and all five offline tests. A follow-up run is in progress for the latest late-checkpoint safety patch.
+Offline tests are present in tests/test_runtime_helpers.py. Validation is run on every PR update. The current branch includes new resource-manifest, fail-closed restore and serialized final-save checks; confirm the latest CI result before merge.
 
 No actual FRP connection, Java client session, or live server backup/restore has been tested yet.
 
@@ -47,7 +47,7 @@ No actual FRP connection, Java client session, or live server backup/restore has
 5. Perform a controlled first Java 26.3 connection and world persistence test.
 
 ## Exact next task
-Review CI results, complete docs/SETUP-CODESPACES.md, then run the initial workflow with no important player data until save/restore is confirmed.
+Review the latest CI result, complete docs/SETUP-CODESPACES.md, upload the private prepared-resource release and run a controlled smoke test with no important player data.
 
 ## Handoff branch
 copilot/initial-runtime-bootstrap
