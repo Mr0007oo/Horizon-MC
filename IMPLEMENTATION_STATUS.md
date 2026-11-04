@@ -1,11 +1,11 @@
 # Horizon MC — Implementation Status
 
-**State:** Runtime bootstrap and documentation follow-up merged into canonical `main` by PRs #1 and #2. A lifecycle timing correction is locally tested on `copilot/fix-lifecycle-seconds`; owner setup and live smoke test remain.
+**State:** Runtime bootstrap and documentation follow-up merged into canonical `main` by PRs #1 and #2. Lifecycle timing correction is committed locally as `bd455ada2dbf6035da2f3812a0b718fd6a369025`; canonical push was denied (HTTP 403), so no PR exists yet.
 **Latest merged canonical commit:** `a1c84bb418d55f26e52cf72b7f28b466adb2ad30`
 **Latest previously CI-validated implementation commit:** `34fa293088e93b048a1e3dd024d1f9e8710978dd`
 **Canonical repository:** https://github.com/Mr0007oo/Horizon-MC  
 **Default branch:** main  
-**Current implementation branch:** `copilot/fix-lifecycle-seconds` (PR pending)
+**Current implementation branch:** `copilot/fix-lifecycle-seconds` (local checkpoint; canonical push denied; no PR)
 
 ## Implemented in the current PR
 
@@ -82,6 +82,7 @@ Current local lifecycle correction:
 - Official SMP compatibility metadata was read at source commit `ee1620f438c853b03ff2c568f4c4b1b443211294`; its declared Horizon/Mixins pins do not match this runtime, so reuse is blocked.
 - The Codespace has nonempty FRP and Telegram inputs. Local FRP config generation passed; the token is stored in a mode-0600 file and the TOML uses file-based token auth. Values were not printed.
 - The current GitHub integration cannot verify Actions secret names (403), and the Codespace token cannot access the private resource release (401). Resource release presence is therefore unverified; no live workflow was dispatched.
+- Canonical push of local checkpoint `bd455ada2dbf6035da2f3812a0b718fd6a369025` was rejected with HTTP 403 for `Mr0007-AI`; `upstream` has no feature branch and no PR was opened.
 
 Coverage includes prepared resource archive extraction and traversal rejection, required Horizon resource manifest, downloader variable expansion, FRP token separation, stale Telegram update filtering, snapshot identity/seed/level.dat validation, fail-closed restore, server settings/operator/whitelist restoration, snapshot rotation/remote verification and lifecycle timing.
 
@@ -104,7 +105,7 @@ See [Codespaces setup](docs/SETUP-CODESPACES.md).
 
 ## Next implementation tasks
 
-1. Run CI for the local lifecycle correction, then merge it through a PR.
+1. Obtain authorized write access to the canonical repository, push `copilot/fix-lifecycle-seconds`, open a PR against `main`, and run CI.
 2. Complete the private resource release and required Actions variables/secrets.
 3. Run a controlled first session and verify the endpoint from a real Java 26.3 client.
 4. Test shutdown save, second-run restore and operator/whitelist persistence.

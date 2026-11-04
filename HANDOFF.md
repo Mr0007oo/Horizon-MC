@@ -1,7 +1,7 @@
 # Horizon MC — Current Handoff
 
 ## Current phase
-Phase 1 — Runtime bootstrap and documentation follow-up merged into canonical `main` by PRs #1 and #2. A lifecycle timing fix is locally tested; owner setup and live smoke test remain.
+Phase 1 — Runtime bootstrap and documentation follow-up merged into canonical `main` by PRs #1 and #2. Lifecycle fix is locally tested and committed as `bd455ada2dbf6035da2f3812a0b718fd6a369025`; canonical push was denied (HTTP 403), so no PR exists yet.
 
 ## Completed in this branch
 - Updated lifecycle requirement to first warning at 5h00m, second warning at 5h15m, graceful shutdown at 5h25m and job hard timeout at 5h50m.
@@ -31,6 +31,7 @@ No actual FRP connection, Java client session, or live server backup/restore has
 
 ## Latest checkpoint
 - Current canonical base: `a1c84bb418d55f26e52cf72b7f28b466adb2ad30`
+- Local checkpoint: `bd455ada2dbf6035da2f3812a0b718fd6a369025` on `copilot/fix-lifecycle-seconds`; push to canonical `upstream` was rejected with HTTP 403. The remote branch was verified absent; no PR was opened.
 - Original implementation PR #1: https://github.com/Mr0007oo/Horizon-MC/pull/1 (merged)
 - Documentation follow-up PR #2: https://github.com/Mr0007oo/Horizon-MC/pull/2 (merged)
 - Latest validated implementation commit: `34fa293088e93b048a1e3dd024d1f9e8710978dd`.
@@ -61,7 +62,7 @@ No actual FRP connection, Java client session, or live server backup/restore has
 5. Perform a controlled first Java 26.3 connection and world persistence test.
 
 ## Current working branch
-`copilot/fix-lifecycle-seconds` (based on canonical `main`; PR pending)
+`copilot/fix-lifecycle-seconds` (local checkpoint based on canonical `main`; canonical push denied; no PR)
 
 ## Exact next task
-Push this tested feature branch and open a PR against canonical `main`; address its CI results. The next runtime gate requires the owner to upload the private `resources-26.3` release and configure FRP Actions variables/secrets; then perform the controlled Java 26.3 connection and persistence test. Gameplay work must wait until a Horizon/Mixins/SMP revision set is mutually compatible and the documented native-mod APIs are verified.
+Obtain authorized write access for `Mr0007-AI` to canonical `Mr0007oo/Horizon-MC`, push the existing `copilot/fix-lifecycle-seconds` branch, and open a PR against `main`; address CI results. The next runtime gate requires the owner to make the private `resources-26.3` release accessible and confirm FRP Actions variables/secrets; then perform the controlled Java 26.3 connection and persistence test. Gameplay work must wait until a Horizon/Mixins/SMP revision set is mutually compatible and the documented native-mod APIs are verified.
