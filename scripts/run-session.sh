@@ -9,7 +9,7 @@ WORLD_ID="${WORLD_ID:?WORLD_ID is missing}"
 WORLD_BRANCH="${WORLD_BRANCH:?WORLD_BRANCH is missing}"
 JOB_STARTED_EPOCH="${JOB_STARTED_EPOCH:-$(date +%s)}"
 HORIZON_BIN="${HORIZON_BIN:-$(command -v horizon-server)}"
-export HORIZON_BIN SERVER_DIR WORLD_NAME WORLD_SEED WORLD_ID WORLD_BRANCH
+export HORIZON_BIN SERVER_DIR WORLD_NAME WORLD_SEED WORLD_ID WORLD_BRANCH JOB_STARTED_EPOCH
 
 mkdir -p "$SERVER_DIR" "$SERVER_DIR/logs"
 server_started=0
@@ -34,28 +34,38 @@ cleanup() {
   set +e
 
   if [[ "$server_started" == "1" ]]; then
-    echo "Starting graceful Horizon shutdown..."
-    horizon cmd say "Server saving and stopping now. Your world progress is being checkpointed." \
-      >> "$SERVER_DIR/logs/session.log" 2>&1
-    horizon stop >> "$SERVER_DIR/logs/session.log" 2>&1
-    phase=""
-    for attempt in $(seq 1 30); do
-      phase="$(horizon status --json 2>/dev/null | jq -r '.phase // empty' 2>/dev/null || true)"
-      [[ "$phase" == "stopped" ]] && break
-      sleep 2
-    done
-    if [[ "$phase" == "stopped" ]]; then
-      echo "Horizon confirms stopped; creating final clean-shutdown snapshot."
-      if python3 "$ROOT/scripts/world-data.py" final-snapshot; then
-        notify "Horizon MC: final snapshot committed and verified. Server session ended cleanly."
+    phase_before="$(horizon status --json 2>/dev/null | jq -r '.phase // empty' 2>/dev/null)"
+    if [[ "$phase_before" == "running" || "$phase_before" == "starting" || "$phase_before" == "restarting" ]]; then
+      echo "Starting graceful Horizon shutdown from phase=$phase_before..."
+      horizon cmd say "Server saving and stopping now. Your world progress is being checkpointed." \
+        >> "$SERVER_DIR/logs/session.log" 2>&1
+      stop_request_ok=0
+      if horizon stop >> "$SERVER_DIR/logs/session.log" 2>&1; then stop_request_ok=1; fi
+      phase=""
+      for attempt in $(seq 1 30); do
+        phase="$(horizon status --json 2>/dev/null | jq -r '.phase // empty' 2>/dev/null || true)"
+        [[ "$phase" == "stopped" ]] && break
+        sleep 2
+      done
+      if [[ "$phase" == "stopped" && "$stop_request_ok" == "1" ]]; then
+        echo "Horizon confirms a requested graceful stop; acquiring checkpoint lock for final snapshot."
+        if timeout --signal=TERM --kill-after=30s 1200s \
+          flock -w 60 "$SERVER_DIR/.checkpoint.lock" \
+          python3 "$ROOT/scripts/world-data.py" final-snapshot; then
+          notify "Horizon MC: final snapshot committed and verified. Server session ended cleanly."
+        else
+          echo "Final snapshot failed or another checkpoint did not release its lock; previous remote snapshot remains the recovery point."
+          notify "Horizon MC: WARNING - server stopped, but final snapshot failed. Restore will use the last verified checkpoint."
+          cleanup_failed=1
+        fi
       else
-        echo "Final snapshot failed; previous remote snapshot remains the recovery point."
-        notify "Horizon MC: WARNING - server stopped, but final snapshot failed. Restore will use the last verified checkpoint."
+        echo "Horizon did not complete a requested stop. Refusing to mark this snapshot clean."
+        notify "Horizon MC: WARNING - shutdown could not be confirmed. The latest hourly checkpoint remains the recovery point."
         cleanup_failed=1
       fi
     else
-      echo "Horizon did not confirm a stopped phase. Refusing to mark this snapshot clean."
-      notify "Horizon MC: WARNING - shutdown could not be confirmed. The latest hourly checkpoint remains the recovery point."
+      echo "Horizon was already stopped before the shutdown request (phase=$phase_before); retaining the last verified checkpoint."
+      notify "Horizon MC: WARNING - server had already left its running state. No clean final snapshot was claimed; the last verified checkpoint remains the recovery point."
       cleanup_failed=1
     fi
   fi
@@ -124,9 +134,10 @@ fi
 notify "Horizon MC is online. Java endpoint uses your FRP host on port 25565. Seed: $WORLD_SEED. Warnings at 5h00 and 5h15; graceful shutdown starts at 5h25."
 
 job_start="$JOB_STARTED_EPOCH"
-next_backup=$(( $(date +%s) + 3600 ))
+next_backup=$(( job_start + 3600 ))
 first_warning_sent=0
 second_warning_sent=0
+nonrunning_since=0
 
 while true; do
   now="$(date +%s)"
@@ -155,8 +166,17 @@ while true; do
   fi
 
   phase="$(horizon status --json | jq -r '.phase // empty')"
-  if [[ "$phase" != "running" ]]; then
-    notify "Horizon MC: server left running phase unexpectedly (phase=$phase). Initiating recovery shutdown."
+  if [[ "$phase" == "running" ]]; then
+    nonrunning_since=0
+  elif [[ "$phase" == "starting" || "$phase" == "restarting" ]]; then
+    if [[ "$nonrunning_since" -eq 0 ]]; then nonrunning_since="$now"; fi
+    if [[ $(( now - nonrunning_since )) -gt 180 ]]; then
+      notify "Horizon MC: server did not return to running after 3 minutes (phase=$phase). Initiating recovery shutdown."
+      echo "Horizon remained in phase=$phase for more than 180 seconds."
+      exit 1
+    fi
+  else
+    notify "Horizon MC: server left its running phase unexpectedly (phase=$phase). Initiating recovery shutdown."
     echo "Unexpected Horizon phase: $phase"
     exit 1
   fi
@@ -170,7 +190,7 @@ while true; do
   if [[ "$elapsed" -lt 270 && "$now" -ge "$next_backup" ]]; then
     echo "Creating hourly checkpoint..."
     timeout --signal=TERM --kill-after=30s 1500s bash "$ROOT/scripts/checkpoint.sh"
-    next_backup=$(( now + 3600 ))
+    next_backup=$(( next_backup + 3600 ))
   fi
 
   sleep 5
