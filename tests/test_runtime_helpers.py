@@ -104,12 +104,22 @@ class RuntimeHelpersTests(unittest.TestCase):
 import datetime, pathlib, sys, zipfile
 args = sys.argv[1:]
 server = pathlib.Path(args[args.index("--dir") + 1])
-name = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d_%H-%M-%S") + "-" + args[-1] + ".zip"
 folder = server / "backups"
 folder.mkdir(parents=True, exist_ok=True)
-with zipfile.ZipFile(folder / name, "w") as archive:
-    archive.writestr("survival/level.dat", b"test-world")
-print("Backed up to backups/" + name)
+if args[2] == "restore":
+    with zipfile.ZipFile(folder / "horizon-restore.zip") as archive:
+        archive.extract("survival/level.dat", server)
+    print("Restored test world")
+elif args[2] == "backup":
+    name = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d_%H-%M-%S") + "-session.zip"
+    with zipfile.ZipFile(folder / name, "w") as archive:
+        archive.writestr("survival/level.dat", b"test-world")
+        archive.writestr("server.toml", b"[server]\\nport = 25565\\n")
+        archive.writestr("ops.json", b"[{\\"name\\":\\"Owner\\"}]")
+        archive.writestr("whitelist.json", b"[{\\"name\\":\\"Friend\\"}]")
+        archive.writestr("banned-players.json", b"[]")
+        archive.writestr("banned-ips.json", b"[]")
+    print("Backed up to backups/" + name)
 """, encoding="utf-8")
             fake.chmod(0o755)
             sha = run(["git", "rev-parse", "HEAD"], cwd=workspace).stdout.strip()
@@ -123,8 +133,12 @@ print("Backed up to backups/" + name)
                 "HORIZON_BIN": str(fake), "HORIZON_VERSION": "v0.2.97",
             })
             script = str(ROOT / "scripts/world-data.py")
-            for command in ("init", "snapshot", "final-snapshot"):
+            for command in ("init", "snapshot"):
                 run([sys.executable, script, command], env=env)
+            run([sys.executable, script, "restore"], env=env)
+            self.assertIn('"Owner"', (server / "ops.json").read_text())
+            self.assertIn('"Friend"', (server / "whitelist.json").read_text())
+            run([sys.executable, script, "final-snapshot"], env=env)
 
             clone = base / "verify"
             run(["git", "clone", "--branch", env["WORLD_BRANCH"], str(remote), str(clone)])
