@@ -61,7 +61,7 @@ These are research baselines, not permission to skip version-pinned verification
 - Send a first maintenance warning at 5h00m of job elapsed time.
 - Send a second warning at 5h15m.
 - Begin graceful shutdown at exactly 5h25m (325 minutes) of job elapsed time, leaving a 25-minute save/push window before the 5h50m job timeout.
-- Create an hourly checkpoint while the server is running.
+- Create consistent checkpoints on the job-start hourly boundaries while the server is running, but do not start another checkpoint after 4h30m.
 - Create and verify a final checkpoint after graceful shutdown.
 - Persist world and player data on a dedicated world-data/<world-id> branch, not main.
 - Control and monitor the server using an allowlisted Telegram bot.
@@ -143,7 +143,7 @@ The default project timing starts at the first job step, before checkout, and is
 |---|---|
 | 0m | Validate inputs, secrets, concurrency and runner |
 | 0–10m | Restore world and initialize runtime/network |
-| 60m intervals | Consistent backup and remote checkpoint |
+| 60m, 120m, 180m and 240m | Consistent backup and remote checkpoint; no hourly job starts after 4h30m |
 | 300m (5h00m) | First player and Telegram warning |
 | 315m (5h15m) | Second warning |
 | 325m (5h25m) | Begin graceful shutdown immediately |
