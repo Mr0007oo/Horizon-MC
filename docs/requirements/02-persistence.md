@@ -21,6 +21,8 @@ Horizon requires prepared Minecraft 26.3 game resources from the owner's own cop
 
 ## World identity and seed isolation
 
+The owner's current seed is **9064150133272194**. The initial world name is `survival`, Minecraft version is `26.3`, and world ID is `survival-9064150133272194-26.3`. The initial runtime branch is `world-data/survival-9064150133272194-26.3`. Do not silently change this seed or restore another world identity.
+
 Create a stable world ID from validated seed and generation-relevant configuration, including Minecraft generation version and relevant data pack/config identity. Do not rely on the seed alone if other generation inputs alter the world.
 
 A changed seed or generation identity must select a new world-data branch. Never merge worlds or overwrite the previous seed's data automatically. A new world with no matching snapshot must require an explicit first-world initialization path.
